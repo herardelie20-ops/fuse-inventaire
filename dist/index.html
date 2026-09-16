@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10191c">
+  <title>Fuse Inventory</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root { --ink:#eaf1ed; --muted:#9aaca5; --line:#2b3a3c; --base:#10191c; --panel:#172326; --panel2:#1c2a2d; --lime:#c9f35a; --aqua:#6ee7d2; --warn:#ffbd67; --danger:#ff7f6f; }
+    * { box-sizing:border-box; } body { margin:0; min-width:320px; background:var(--base); color:var(--ink); font:16px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, select { font:inherit; } button { cursor:pointer; } .app { min-height:100vh; display:grid; grid-template-columns:250px 1fr; }
+    aside { border-right:1px solid var(--line); padding:26px 16px; display:flex; flex-direction:column; background:#0d1517; } .brand { display:flex; align-items:center; gap:10px; padding:0 10px 30px; font-weight:700; letter-spacing:.02em; } .brand-mark { width:25px; height:25px; border:3px solid var(--lime); border-radius:7px 7px 3px 3px; position:relative; } .brand-mark:after { content:""; position:absolute; left:4px; right:4px; top:7px; border-top:3px solid var(--lime); }
+    .nav-label { color:var(--muted); font-size:.75rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin:0 10px 8px; } nav { display:grid; gap:4px; } nav button { text-align:left; color:var(--muted); border:0; background:transparent; border-radius:8px; padding:11px 12px; } nav button:hover, nav button.active { background:#233237; color:var(--ink); } nav button.active { box-shadow:inset 3px 0 0 var(--lime); } .nav-icon { display:inline-block; width:22px; color:var(--lime); font-weight:700; } .operator { margin-top:auto; border-top:1px solid var(--line); padding:18px 10px 0; display:flex; gap:10px; align-items:center; color:var(--muted); font-size:.875rem; } .avatar { width:30px; height:30px; display:grid; place-items:center; background:#315254; color:var(--aqua); border-radius:50%; font-weight:700; }
+    main { padding:28px clamp(20px,4vw,56px) 48px; max-width:1540px; width:100%; margin:auto; } .top { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:28px; } h1 { margin:0; font-size:clamp(1.55rem,3vw,2.25rem); letter-spacing:-.04em; } .date { margin:4px 0 0; color:var(--muted); font-size:.9rem; } .primary { border:0; background:var(--lime); color:#122017; font-weight:750; border-radius:8px; padding:12px 17px; } .primary:hover { filter:brightness(1.08); } .primary span { margin-right:8px; font-size:1.2em; }
+    .overview { display:grid; grid-template-columns:1.45fr repeat(3,1fr); gap:14px; margin-bottom:26px; } .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; } .summary { min-height:132px; background:linear-gradient(130deg,#203533,#172326 62%); } .eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-size:.72rem; font-weight:750; } .summary h2 { font-size:1.35rem; margin:7px 0 5px; letter-spacing:-.025em; } .summary p, .metric p { color:var(--muted); margin:0; font-size:.875rem; } .metric { display:flex; flex-direction:column; justify-content:space-between; min-height:132px; } .metric strong { display:block; font-size:2.1rem; letter-spacing:-.05em; } .metric .danger { color:var(--danger); } .metric .warning { color:var(--warn); } .metric .good { color:var(--aqua); }
+    .grid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(300px,.9fr); gap:18px; } .section-title { display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; } .section-title h2 { margin:0; font-size:1.05rem; letter-spacing:-.02em; } .link { color:var(--aqua); background:none; border:0; padding:0; font-size:.875rem; }
+    .location-list { display:grid; gap:7px; } .location { display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:12px; align-items:center; padding:12px 10px; border-radius:9px; } .location:hover { background:var(--panel2); } .loc-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:8px; background:#203337; color:var(--lime); font-weight:800; } .location h3 { margin:0; font-size:.96rem; } .location p { margin:2px 0 0; color:var(--muted); font-size:.78rem; } .tag { white-space:nowrap; padding:4px 8px; border-radius:999px; font-size:.75rem; font-weight:700; } .tag.ok { color:var(--aqua); background:#1b3937; } .tag.check { color:var(--warn); background:#3c301e; } .tag.alert { color:var(--danger); background:#442624; }
+    .alert-list { display:grid; gap:10px; } .alert { border-left:3px solid var(--warn); padding:4px 0 4px 12px; } .alert.urgent { border-color:var(--danger); } .alert h3 { margin:0; font-size:.9rem; } .alert p { margin:3px 0 0; color:var(--muted); font-size:.8rem; } .stock-bars { display:grid; gap:13px; } .stock-row { display:grid; gap:5px; } .stock-row div { display:flex; justify-content:space-between; font-size:.85rem; } .track { height:7px; border-radius:99px; background:#263638; overflow:hidden; } .fill { height:100%; background:var(--aqua); border-radius:99px; } .fill.low { background:var(--warn); } .fill.critical { background:var(--danger); }
+    .modal-wrap { display:none; position:fixed; inset:0; padding:18px; background:rgb(4 9 10 / .72); align-items:center; justify-content:center; } .modal-wrap.show { display:flex; } .modal { width:min(530px,100%); background:#172326; border:1px solid #3a4c4d; border-radius:13px; padding:24px; box-shadow:0 18px 70px #0008; } .modal h2 { margin:0 0 5px; } .modal p { color:var(--muted); margin:0 0 20px; } .form-grid { display:grid; gap:13px; } label { font-size:.83rem; color:var(--muted); display:grid; gap:5px; } select { background:#10191c; color:var(--ink); border:1px solid #405052; border-radius:7px; padding:10px; } .modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:20px; } .secondary { color:var(--ink); background:transparent; border:1px solid #405052; padding:10px 14px; border-radius:7px; }
+    @media (max-width:980px) { .app { grid-template-columns:1fr; } aside { padding:14px; border-right:0; border-bottom:1px solid var(--line); } .brand { padding:0 0 12px; } nav { grid-template-columns:repeat(4,1fr); } nav button { font-size:.78rem; padding:8px; } .nav-label,.operator { display:none; } .overview { grid-template-columns:repeat(2,1fr); } .summary { grid-column:span 2; } } @media (max-width:650px) { main { padding:20px 14px 32px; } .top { align-items:flex-start; flex-direction:column; } .overview,.grid { grid-template-columns:1fr; } .summary { grid-column:auto; } nav { grid-template-columns:repeat(2,1fr); } .location { grid-template-columns:34px 1fr; } .location .tag { grid-column:2; justify-self:start; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>FUSE INVENTORY</div>
+      <p class="nav-label">Opérations</p>
+      <nav aria-label="Navigation principale">
+        <button class="active" type="button"><span class="nav-icon">⌂</span>Vue d’ensemble</button>
+        <button type="button"><span class="nav-icon">▣</span>Nouvel inventaire</button>
+        <button type="button"><span class="nav-icon">▤</span>Rapports</button>
+        <button type="button"><span class="nav-icon">◴</span>Péremption</button>
+      </nav>
+      <p class="nav-label" style="margin-top:28px">Référentiel</p>
+      <nav aria-label="Référentiel">
+        <button type="button"><span class="nav-icon">▤</span>Bars &amp; frigos</button>
+        <button type="button"><span class="nav-icon">□</span>Boissons</button>
+        <button type="button"><span class="nav-icon">▥</span>Réserves</button>
+      </nav>
+      <div class="operator"><div class="avatar">E</div><div><strong style="color:var(--ink)">Elie</strong><br>Opérateur</div></div>
+    </aside>
+    <main>
+      <header class="top"><div><h1>Vue d’ensemble</h1><p class="date" id="today">Chargement de la date…</p></div><button class="primary" id="openInventory" type="button"><span>＋</span>Démarrer un inventaire</button></header>
+      <section class="overview" aria-label="Résumé du jour">
+        <article class="card summary"><span class="eyebrow">Prochaine action</span><h2>Contrôler Bar 1 · Frigo 4</h2><p>Photo de la date requise — ligne de Jupiler, sortie à gauche.</p></article>
+        <article class="card metric"><span class="eyebrow">Inventaires aujourd’hui</span><strong class="good">0</strong><p>En attente du premier relevé</p></article>
+        <article class="card metric"><span class="eyebrow">Écarts à vérifier</span><strong class="warning">12</strong><p>Unités manquantes ou en trop</p></article>
+        <article class="card metric"><span class="eyebrow">Alertes dates</span><strong class="danger">3</strong><p>Produits à contrôler</p></article>
+      </section>
+      <section class="grid">
+        <article class="card"><div class="section-title"><h2>Emplacements à contrôler</h2><button class="link" type="button">Voir tous</button></div><div class="location-list">
+          <div class="location"><div class="loc-icon">B1</div><div><h3>Bar 1 · Frigos</h3><p>11 frigos · dernier relevé : à créer</p></div><span class="tag check">À inventorier</span></div>
+          <div class="location"><div class="loc-icon">B2</div><div><h3>Bar 2 · Chambre froide</h3><p>Frigos et réserve du bar</p></div><span class="tag check">À inventorier</span></div>
+          <div class="location"><div class="loc-icon">AL</div><div><h3>Stock alcool fort</h3><p>Niveaux de bouteilles à estimer en cl</p></div><span class="tag check">À inventorier</span></div>
+          <div class="location"><div class="loc-icon">SO</div><div><h3>Sous-sol · Fûts</h3><p>Fûts 30 L et 60 L</p></div><span class="tag ok">Référence prête</span></div>
+          <div class="location"><div class="loc-icon">CO</div><div><h3>Cosmos &amp; sous-escalier</h3><p>Réserve indépendante</p></div><span class="tag check">À inventorier</span></div>
+        </div></article>
+        <div style="display:grid;gap:18px"><article class="card"><div class="section-title"><h2>Dates à surveiller</h2><button class="link" type="button">Rapport</button></div><div class="alert-list"><div class="alert urgent"><h3>Red Bull — date à confirmer</h3><p>Escalier toilettes · photo de fin de ligne manquante</p></div><div class="alert"><h3>Jupiler — rotation à vérifier</h3><p>Bar 1 · Frigo 4 · contrôle sous 7 jours</p></div><div class="alert"><h3>Coca-Cola — stock lent</h3><p>Réserve Bar 1 · risque à évaluer après 3 relevés</p></div></div></article><article class="card"><div class="section-title"><h2>Niveau des réserves</h2><button class="link" type="button">Détails</button></div><div class="stock-bars"><div class="stock-row"><div><span>Bières &amp; softs · Bar 1</span><span>76 %</span></div><div class="track"><div class="fill" style="width:76%"></div></div></div><div class="stock-row"><div><span>Alcool fort</span><span>42 %</span></div><div class="track"><div class="fill low" style="width:42%"></div></div></div><div class="stock-row"><div><span>Red Bull · escalier toilettes</span><span>18 %</span></div><div class="track"><div class="fill critical" style="width:18%"></div></div></div></div></article></div>
+      </section>
+    </main>
+  </div>
+  <div class="modal-wrap" id="inventoryModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal"><h2 id="modalTitle">Démarrer un inventaire</h2><p>L’heure et la personne sont enregistrées automatiquement.</p><div class="form-grid"><label>Emplacement<select><option>Bar 1 · Frigos</option><option>Bar 1 · Réserve bières et softs</option><option>Stock alcool fort</option><option>Bar 2 · Chambre froide</option><option>Sous-sol · Fûts</option></select></label><label>Type de relevé<select><option>Inventaire complet</option><option>Contrôle d’un frigo</option><option>Contrôle de date / roulement</option></select></label></div><div class="modal-actions"><button class="secondary" id="closeInventory" type="button">Annuler</button><button class="primary" type="button" id="startInventory">Commencer les photos</button></div></div>
+  </div>
+  <script>
+    const today = new Intl.DateTimeFormat('fr-BE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date());
+    document.getElementById('today').textContent = today.charAt(0).toUpperCase()+today.slice(1)+' · Fuse Bruxelles';
+    const modal = document.getElementById('inventoryModal');
+    document.getElementById('openInventory').onclick = () => modal.classList.add('show');
+    document.getElementById('closeInventory').onclick = () => modal.classList.remove('show');
+    document.getElementById('startInventory').onclick = () => { document.getElementById('startInventory').textContent='Prêt pour les photos'; };
+    modal.onclick = (event) => { if(event.target === modal) modal.classList.remove('show'); };
+  </script>
+</body>
+</html>
