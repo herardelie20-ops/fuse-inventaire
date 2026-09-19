@@ -8,12 +8,18 @@
   info.innerHTML = `<b>Mode autonome</b><p class="small">Les relevés et validations restent sur ce téléphone ; les photos sont traitées localement et ne sont pas jointes au rapport. Une connexion est uniquement nécessaire au moment d’envoyer un rapport. Le modèle de vision local doit être installé sur l’appareil avant de pouvoir analyser les photos sans Internet.</p>`;
   app.querySelector('section')?.before(info);
 
+  const preview = document.createElement('section');
+  preview.className = 'card report-preview';
+  preview.innerHTML = `<b>Aperçu avant envoi</b><p class="small">Vérifie le rapport final avant de le télécharger, l’envoyer par SMS ou par e-mail.</p><button class="secondary" id="previewReport" type="button">Afficher l’aperçu du rapport</button><div class="hidden" id="reportPreviewContent"></div><p class="small" id="previewStatus"></p>`;
+  report.after(preview);
+
   const share = document.createElement('section');
   share.className = 'card report-share';
   share.innerHTML = `<b>Envoyer le rapport</b><p class="small">Choisis un téléphone ou une adresse e-mail. L’application prépare le message ; l’envoi final se fait dans ton application SMS ou e-mail.</p><label>Destinataire<select id="sendMethod"><option value="sms">Numéro de téléphone</option><option value="email">Adresse e-mail</option><option value="share">Choisir une application</option></select></label><label id="recipientLabel">Numéro de téléphone<input id="recipient" type="tel" inputmode="tel" placeholder="Ex. +32 470 00 00 00"></label><button class="primary" id="sendReport" type="button">Préparer l’envoi</button><p class="small" id="sendStatus"></p>`;
-  report.after(share);
+  preview.after(share);
 
   const q = id => share.querySelector(id);
+  const previewQ = id => preview.querySelector(id);
   const text = () => {
     const title = document.querySelector('#rTitle').textContent.trim();
     const meta = document.querySelector('#rMeta').textContent.trim();
@@ -33,6 +39,18 @@
     input.placeholder = mode === 'email' ? 'Ex. manager@fuse.be' : 'Ex. +32 470 00 00 00';
   }
   q('#sendMethod').addEventListener('change', updateRecipient);
+  previewQ('#previewReport').addEventListener('click', () => {
+    if (report.classList.contains('hidden')) document.querySelector('#detailedReport')?.click();
+    const source = report.querySelector('.report');
+    if (!source) { previewQ('#previewStatus').textContent = 'Prépare d’abord un rapport détaillé.'; return; }
+    const copy = source.cloneNode(true);
+    copy.removeAttribute('id');
+    const target = previewQ('#reportPreviewContent');
+    target.replaceChildren(copy);
+    target.classList.remove('hidden');
+    previewQ('#previewStatus').textContent = 'Aperçu prêt. Tu peux maintenant choisir le format ou préparer l’envoi.';
+    preview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   q('#sendReport').addEventListener('click', async () => {
     if (report.classList.contains('hidden')) { q('#sendStatus').textContent = 'Prépare d’abord un rapport d’inventaire.'; return; }
     const body = text();
