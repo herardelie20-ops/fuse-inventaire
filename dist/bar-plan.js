@@ -1,31 +1,55 @@
 (() => {
-  const editorStyle = document.createElement('style'); editorStyle.textContent = `.bar-plan-card{background:#f7f8f2!important;color:#171b1a!important;border-color:#1c2421!important;max-width:100%;overflow:hidden}.bar-plan-card .small{color:#47524d}.plan-head{display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:14px}.plan-head h2{margin:3px 0;font-size:1.35rem;letter-spacing:-.04em}.eyebrow{font-size:.7rem;font-weight:900;letter-spacing:.11em;color:#527345}.plan-mode.active{background:#18261f!important;color:#fff!important}.plan-editor{display:grid;grid-template-columns:minmax(0,1fr) 205px;gap:14px;align-items:start}.plan-stage{position:relative;border:2px solid #15221c;background:#fff;overflow:hidden;touch-action:none}.plan-stage img{display:block;width:100%;height:auto}.plan-stage.editing{outline:3px solid #9ae781;outline-offset:3px}.plan-stage.editing:after{content:'MODE ÉDITION';position:absolute;left:10px;top:9px;padding:4px 7px;background:#18261f;color:#fff;font-size:.65rem;font-weight:900;letter-spacing:.08em;z-index:5}.fridge-marker{position:absolute;z-index:2;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#111;border:2px solid #111;font-weight:900;font-size:.72rem}.plan-item{position:absolute;z-index:4;transform:translate(-50%,-50%);min-width:38px;min-height:34px;padding:4px 5px;border:2px solid #111;border-radius:2px;background:#159cec;color:#111;cursor:grab;font:700 10px/1 system-ui,sans-serif;box-shadow:1px 2px 0 #111}.plan-item.selected{outline:3px solid #fff;box-shadow:0 0 0 5px #1d5f37}.plan-item:active{cursor:grabbing}.item-coca{background:#ee1948}.item-redbull{background:#35eaf0}.item-stock{background:#efdcc1}.item-sink{background:#1089e7;color:#fff}.item-bahut{background:repeating-linear-gradient(135deg,#fff,#fff 3px,#b6b6b6 3px,#b6b6b6 5px)}.item-beer{background:#e0e0e0;border-radius:9px}.item-cash{background:#d5d5d5;transform:translate(-50%,-50%) rotate(-18deg)}.item-jager{background:#fff400}.toolbox{background:#e9f4e7;border:1px solid #9ab895;padding:12px;border-radius:8px}.toolbox b{font-size:.9rem}.toolbox .small{font-size:.76rem;margin:4px 0 10px}.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.tool{display:flex;align-items:center;gap:5px;text-align:left;padding:7px 5px;background:#fff;border:1px solid #99a89c;border-radius:5px;color:#111;font-size:.7rem}.tool i{width:13px;height:13px;flex:none;border:1px solid #111;background:#159cec}.tool-red i{background:#ee1948}.tool-cyan i{background:#35eaf0}.tool-beige i{background:#efdcc1}.tool-sink i{background:#1089e7}.tool-hatch i{background:repeating-linear-gradient(135deg,#fff,#fff 2px,#aaa 2px,#aaa 4px)}.tool-beer i{background:#ddd;border-radius:50%}.tool-cash i{background:#ccc}.tool-yellow i{background:#fff400}.selected-tool{margin:10px 0 8px;padding:7px;background:#fff;border-left:3px solid #527345;font-size:.75rem;font-weight:700}.tool-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}.tool-actions button{padding:8px 4px;font-size:.7rem}.tool-actions button:disabled{opacity:.5}@media(max-width:620px){.plan-editor{grid-template-columns:1fr}.toolbox{order:-1}.tool-grid{grid-template-columns:repeat(4,1fr)}.tool{font-size:.62rem}.plan-head{align-items:center}.plan-mode{padding:9px;font-size:.78rem}}`; document.head.append(editorStyle);
   const place = document.querySelector('#bar');
   const selectorCard = place.closest('section');
   const plan = document.createElement('section');
-  plan.id = 'barPlan'; plan.className = 'card bar-plan-card';
-  plan.innerHTML = `<div class="plan-head"><div><span class="eyebrow">ATELIER · BAR 1</span><h2 id="barPlanTitle">Plan du lieu</h2><p id="barPlanNote" class="small"></p></div><button class="secondary plan-mode" id="planMode" aria-pressed="false">Modifier le plan</button></div><div class="plan-editor"><div class="plan-stage" id="barPlanCanvas"><img id="barPlanImage" alt="Plan du Bar 1"><div id="fridgeMarkers"></div><div id="editableItems" aria-label="Éléments du plan"></div></div><aside class="toolbox" id="toolbox" hidden><b>Éléments à placer</b><p class="small">Choisis un élément puis dépose-le sur le plan.</p><div class="tool-grid" id="toolGrid"></div><div class="selected-tool" id="selectedTool">Sélectionne un élément</div><div class="tool-actions"><button class="secondary" id="deleteItem" disabled>Supprimer</button><button class="secondary" id="resetPlan">Réinitialiser</button></div></aside></div>`;
+  plan.id = 'barPlan';
+  plan.className = 'card';
+  plan.innerHTML = '<b id="barPlanTitle">Plan du lieu</b><p id="barPlanNote" class="small"></p><div id="barPlanCanvas"><img id="barPlanImage" alt="Plan du bar sélectionné"><div id="fridgeMarkers"></div></div>';
   selectorCard.after(plan);
-  const title = plan.querySelector('#barPlanTitle'), note = plan.querySelector('#barPlanNote'), image = plan.querySelector('#barPlanImage'), markers = plan.querySelector('#fridgeMarkers'), canvas = plan.querySelector('#barPlanCanvas'), editableItems = plan.querySelector('#editableItems'), toolbox = plan.querySelector('#toolbox'), modeButton = plan.querySelector('#planMode'), selectedTool = plan.querySelector('#selectedTool'), deleteButton = plan.querySelector('#deleteItem');
-  const storageKey = 'fuse-bar-1-layout-v1'; let editing = false, selectedId = null, drag = null, items = [];
-  const palette = [['fridge','Frigo','blue'],['coca','Frigo Coca','red'],['redbull','Red Bull','cyan'],['stock','Stock','beige'],['sink','Évier','sink'],['bahut','Bahut','hatch'],['beer','Pompes bière','beer'],['cash','Caisse','cash'],['jager','Pompe Jäger','yellow']];
-  const base = [['fridge','1',18.4,65],['fridge','2',18.4,56.3],['fridge','3',18.4,48],['fridge','4',45.6,19.2],['fridge','5',53,19.2],['fridge','6',60.4,19.2],['fridge','7',64.1,24.1],['fridge','8',64.1,33.4],['fridge','9',64.1,41.2],['fridge','10',63.3,70.3],['fridge','11',54.9,74.2],['fridge','12',49.4,77.1],['coca','13',40.7,77.1],['coca','14',26,77.1],['bahut','Bahut 1',28.7,42.6],['bahut','Bahut 2',47.6,27.4],['redbull','Red Bull',34.6,45.7],['sink','Évier bar',29.1,14.2],['sink','Évier plonge',11,42],['beer','Pompes 2',13.5,68.7],['beer','Pompes 4',68.2,55.2],['stock','Stock bière',63,58],['stock','Stock Coca',39.2,65.6],['cash','Caisse 1',48.5,55.8],['cash','Caisse 2',48.5,41.2],['jager','Jäger',34.8,40]].map((x,i)=>({id:`base-${i}`,type:x[0],label:x[1],x:x[2],y:x[3]}));
-  const cloneBase = () => base.map(x=>({...x}));
-  function loadItems(){try{const saved=JSON.parse(localStorage.getItem(storageKey));return Array.isArray(saved)?saved:cloneBase()}catch{return cloneBase()}}
-  function saveItems(){localStorage.setItem(storageKey,JSON.stringify(items))}
-  function typeName(type){return palette.find(x=>x[0]===type)?.[1]||type}
-  function renderMarkers(){markers.innerHTML=editing?'':base.filter(x=>x.type==='fridge'||x.type==='coca').map(x=>`<span class="fridge-marker" style="left:${x.x}%;top:${x.y}%">${x.label}</span>`).join('')}
-  function renderItems(){editableItems.innerHTML=items.map(item=>`<button class="plan-item item-${item.type} ${selectedId===item.id?'selected':''}" data-id="${item.id}" style="left:${item.x}%;top:${item.y}%" aria-label="${typeName(item.type)} : ${item.label}"><span>${item.label}</span></button>`).join('');renderMarkers();deleteButton.disabled=!selectedId;const active=items.find(x=>x.id===selectedId);selectedTool.textContent=active?`${typeName(active.type)} · ${active.label}`:'Sélectionne un élément'}
-  function addItem(type){const count=items.filter(x=>x.type===type).length+1,label=type==='fridge'?`Frigo ${count}`:`${typeName(type)} ${count}`,item={id:`item-${Date.now()}`,type,label,x:50,y:50};items.push(item);selectedId=item.id;saveItems();renderItems()}
-  function point(event){const r=canvas.getBoundingClientRect();return{x:Math.max(3,Math.min(97,((event.clientX-r.left)/r.width)*100)),y:Math.max(3,Math.min(97,((event.clientY-r.top)/r.height)*100))}}
-  function startDrag(event){if(!editing)return;const button=event.target.closest('.plan-item');if(!button)return;event.preventDefault();selectedId=button.dataset.id;const item=items.find(x=>x.id===selectedId);drag={id:item.id,...point(event)};button.setPointerCapture?.(event.pointerId);renderItems()}
-  function moveDrag(event){if(!drag)return;const p=point(event),item=items.find(x=>x.id===drag.id);item.x=Math.round((item.x+p.x-drag.x)*10)/10;item.y=Math.round((item.y+p.y-drag.y)*10)/10;drag={id:item.id,...p};const el=editableItems.querySelector(`[data-id="${item.id}"]`);if(el){el.style.left=`${item.x}%`;el.style.top=`${item.y}%`}}
-  function stopDrag(){if(!drag)return;drag=null;saveItems();renderItems()}
-  function updatePlan(){const isBar=place.value.startsWith('Bar ');plan.classList.toggle('hidden',!isBar);if(!isBar)return;title.textContent=`Plan — ${place.value}`;if(place.value==='Bar 1 - Main room'){image.src='plan-bar-1.png';image.hidden=false;note.textContent=editing?'Glissez les équipements pour adapter le plan. Les changements sont conservés sur cet appareil.':'Passez en mode modification pour déplacer ou ajouter des éléments.';renderItems()}else{image.hidden=true;editableItems.innerHTML='';markers.innerHTML='';note.textContent='Plan à ajouter pour ce bar.'}}
-  plan.querySelector('#toolGrid').innerHTML=palette.map(([type,label,color])=>`<button class="tool tool-${color}" data-type="${type}"><i></i>${label}</button>`).join('');
-  plan.querySelector('#toolGrid').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(b)addItem(b.dataset.type)});
-  modeButton.addEventListener('click',()=>{editing=!editing;selectedId=null;toolbox.hidden=!editing;modeButton.textContent=editing?'Terminer':'Modifier le plan';modeButton.classList.toggle('active',editing);modeButton.setAttribute('aria-pressed',editing);canvas.classList.toggle('editing',editing);updatePlan()});
-  deleteButton.addEventListener('click',()=>{if(!selectedId)return;items=items.filter(x=>x.id!==selectedId);selectedId=null;saveItems();renderItems()});
-  plan.querySelector('#resetPlan').addEventListener('click',()=>{items=cloneBase();selectedId=null;saveItems();renderItems()});
-  editableItems.addEventListener('pointerdown',startDrag);window.addEventListener('pointermove',moveDrag);window.addEventListener('pointerup',stopDrag);items=loadItems();updatePlan();
+
+  const title = plan.querySelector('#barPlanTitle');
+  const note = plan.querySelector('#barPlanNote');
+  const image = plan.querySelector('#barPlanImage');
+  const markers = plan.querySelector('#fridgeMarkers');
+
+  const bar1Markers = [
+    ['Frigo 1', '1', 18.4, 65], ['Frigo 2', '2', 18.4, 56.3], ['Frigo 3', '3', 18.4, 48],
+    ['Frigo 4', '4', 45.6, 19.2], ['Frigo 5', '5', 53, 19.2], ['Frigo 6', '6', 60.4, 19.2],
+    ['Frigo 7', '7', 64.1, 24.1], ['Frigo 8', '8', 64.1, 33.4], ['Frigo 9', '9', 64.1, 41.2],
+    ['Frigo 10', '10', 63.3, 70.3], ['Frigo 11', '11', 54.9, 74.2], ['Frigo 12', '12', 49.4, 77.1],
+    ['Frigo Coca 13', '13', 40.7, 77.1], ['Frigo Coca 14', '14', 26, 77.1],
+    ['Bahut 1', '15', 28.7, 42.6], ['Bahut 2', '16', 47.6, 27.4], ['Frigo Redbull 17', '17', 34.6, 45.7]
+  ];
+
+  function isFinished(fridge) {
+    const saved = localStorage.getItem(`fuse-check-Bar 1 - Main room-${fridge}`);
+    return Boolean(saved && JSON.parse(saved).completed);
+  }
+
+  function renderMarkers() {
+    markers.innerHTML = bar1Markers.map(([fridge, label, left, top]) =>
+      `<span class="fridge-marker ${isFinished(fridge) ? 'done' : ''}" title="${fridge}" style="left:${left}%;top:${top}%">${label}</span>`
+    ).join('');
+  }
+
+  function updatePlan() {
+    const isBar = place.value.startsWith('Bar ');
+    plan.classList.toggle('hidden', !isBar);
+    if (!isBar) return;
+    title.textContent = `Plan — ${place.value}`;
+    if (place.value === 'Bar 1 - Main room') {
+      image.src = 'plan-bar-1.png';
+      image.hidden = false;
+      note.textContent = 'Repérez les frigos numérotés avant de lancer le comptage.';
+      renderMarkers();
+    } else {
+      image.hidden = true;
+      markers.innerHTML = '';
+      note.textContent = 'Plan à ajouter pour ce bar.';
+    }
+  }
+
+  place.addEventListener('change', () => setTimeout(updatePlan, 0));
+  document.addEventListener('fuse:fridge-finished', renderMarkers);
+  updatePlan();
 })();
