@@ -39,6 +39,12 @@
 
   // Générateur PDF embarqué : aucun CDN ni connexion Internet n'est nécessaire.
   const cp1252 = { '€': 128, '‚': 130, 'ƒ': 131, '„': 132, '…': 133, '†': 134, '‡': 135, 'ˆ': 136, '‰': 137, 'Š': 138, '‹': 139, 'Œ': 140, 'Ž': 142, '‘': 145, '’': 146, '“': 147, '”': 148, '•': 149, '–': 150, '—': 151, '˜': 152, '™': 153, 'š': 154, '›': 155, 'œ': 156, 'ž': 158, 'Ÿ': 159 };
+  const barPlans = {
+    'Bar 1 - Main room': 'plan-bar-1.png',
+    'Bar 2 - Main room': 'plan-bar-2.png',
+    'Bar 3 - Motion': 'plan-bar-3.png',
+    'Bar 4 - Cosmos': 'plan-bar-4.png'
+  };
   function bytes(value) {
     const output = [];
     for (const char of String(value)) { const code = char.codePointAt(0); output.push(code <= 127 ? code : (cp1252[char] ?? (code <= 255 ? code : 63))); }
@@ -53,7 +59,32 @@
     });
     if (current) lines.push(current); return lines;
   };
-  function makePdf() {
+  function loadPlan(name, source) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1, 1400 / image.naturalWidth);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.naturalWidth * scale); canvas.height = Math.round(image.naturalHeight * scale);
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        const raw = atob(canvas.toDataURL('image/jpeg', 0.88).split(',')[1]);
+        resolve({ name, width: canvas.width, height: canvas.height, data: Uint8Array.from(raw, char => char.charCodeAt(0)) });
+      };
+      image.onerror = () => reject(new Error(`Plan indisponible : ${name}`));
+      image.src = source;
+    });
+  }
+  function plansForReport() {
+    const title = reportTitle(); const names = Object.keys(barPlans);
+    const selected = names.filter(name => title.includes(name));
+    return selected.length ? selected : (title.includes('Rapport général') ? names : []);
+  }
+  function asBytes(value) { return value instanceof Uint8Array ? value : bytes(value); }
+  function joinBytes(parts) {
+    const total = parts.reduce((sum, part) => sum + part.length, 0); const output = new Uint8Array(total); let offset = 0;
+    parts.forEach(part => { output.set(part, offset); offset += part.length; }); return output;
+  }
+  async function makePdf() {
     const pages = []; let stream = []; let y = 792;
     const text = (value, x, yy, size = 10, bold = false, color = '0.10 0.15 0.16') => stream.push(`${color} rg BT /${bold ? 'F2' : 'F1'} ${size} Tf 1 0 0 1 ${x} ${yy} Tm (${pdfString(value)}) Tj ET`);
     const line = (x1, yy, x2) => stream.push(`0.82 0.86 0.86 RG 0.5 w ${x1} ${yy} m ${x2} ${yy} l S`);
@@ -82,23 +113,49 @@
       y -= height; line(42, y + 3, 553); y -= 5;
     });
     footer(); finish();
-    const objects = ['<< /Type /Catalog /Pages 2 0 R >>', '']; const pageIds = [];
-    pages.forEach(content => { pageIds.push(3 + pageIds.length * 2); objects.push('', content); });
-    objects[1] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`;
-    pages.forEach((content, index) => {
-      const pageId = 3 + index * 2; const streamId = pageId + 1;
-      objects[pageId - 1] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >> >> >> /Contents ${streamId} 0 R >>`;
-      objects[streamId - 1] = `<< /Length ${bytes(content).length} >>\nstream\n${content}\nendstream`;
+    const plans = await Promise.all(plansForReport().map(async name => {
+      try { return await loadPlan(name, barPlans[name]); } catch { return null; }
+    }));
+    const validPlans = plans.filter(Boolean);
+    validPlans.forEach(plan => {
+      const maxWidth = 511; const maxHeight = 665; const ratio = Math.min(maxWidth / plan.width, maxHeight / plan.height);
+      const width = plan.width * ratio; const height = plan.height * ratio; const x = (595 - width) / 2; const imageY = 64;
+      const planStream = [
+        '0.10 0.15 0.16 rg BT /F2 9 Tf 1 0 0 1 42 792 Tm (FUSE · INVENTAIRE LOCAL) Tj ET',
+        `0.10 0.15 0.16 rg BT /F2 20 Tf 1 0 0 1 42 758 Tm (${pdfString(`Plan — ${plan.name}`)}) Tj ET`,
+        `q ${width.toFixed(2)} 0 0 ${height.toFixed(2)} ${x.toFixed(2)} ${imageY.toFixed(2)} cm /Im${validPlans.indexOf(plan) + 1} Do Q`,
+        `0.28 0.35 0.38 rg BT /F1 8 Tf 1 0 0 1 42 25 Tm (FUSE · inventaire local — plan du bar) Tj ET`
+      ].join('\n');
+      pages.push({ content: planStream, plan });
     });
-    let pdf = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'; const offsets = [0];
-    objects.forEach((object, index) => { offsets.push(bytes(pdf).length); pdf += `${index + 1} 0 obj\n${object}\nendobj\n`; });
-    const xref = bytes(pdf).length; pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-    offsets.slice(1).forEach(offset => { pdf += `${String(offset).padStart(10, '0')} 00000 n \n`; });
-    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-    return new Blob([bytes(pdf)], { type: 'application/pdf' });
+    const textPages = pages.map(page => typeof page === 'string' ? { content: page, plan: null } : page);
+    const objects = [null, '<< /Type /Catalog /Pages 2 0 R >>', ''];
+    const addObject = object => { objects.push(object); return objects.length - 1; };
+    const imageIds = new Map();
+    validPlans.forEach(plan => {
+      const header = bytes(`<< /Type /XObject /Subtype /Image /Width ${plan.width} /Height ${plan.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${plan.data.length} >>\nstream\n`);
+      imageIds.set(plan, addObject(joinBytes([header, plan.data, bytes('\nendstream')])));
+    });
+    const pageIds = [];
+    textPages.forEach(page => {
+      const content = bytes(page.content); const contentId = addObject(joinBytes([bytes(`<< /Length ${content.length} >>\nstream\n`), content, bytes('\nendstream')]));
+      const xObject = page.plan ? ` /XObject << /Im${validPlans.indexOf(page.plan) + 1} ${imageIds.get(page.plan)} 0 R >>` : '';
+      const resources = `/Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >> >>${xObject} >>`;
+      const pageId = addObject(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] ${resources} /Contents ${contentId} 0 R >>`);
+      pageIds.push(pageId);
+    });
+    objects[2] = `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pageIds.length} >>`;
+    const body = [bytes('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n')]; const offsets = [0]; let position = body[0].length;
+    for (let id = 1; id < objects.length; id += 1) {
+      offsets[id] = position; const part = joinBytes([bytes(`${id} 0 obj\n`), asBytes(objects[id]), bytes('\nendobj\n')]); body.push(part); position += part.length;
+    }
+    const xref = position; let trailer = `xref\n0 ${objects.length}\n0000000000 65535 f \n`;
+    for (let id = 1; id < objects.length; id += 1) trailer += `${String(offsets[id]).padStart(10, '0')} 00000 n \n`;
+    trailer += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    body.push(bytes(trailer)); return new Blob([joinBytes(body)], { type: 'application/pdf' });
   }
   async function savePdf(name) {
-    const pdf = makePdf(); const filename = `${name}.pdf`;
+    const pdf = await makePdf(); const filename = `${name}.pdf`;
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Document PDF', accept: { 'application/pdf': ['.pdf'] } }] });
