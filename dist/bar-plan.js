@@ -113,5 +113,8 @@
   document.addEventListener('fuse:fridge-progress', renderMarkers);
   document.addEventListener('fuse-profile-changed', updatePlan);
   document.addEventListener('fuse-language-changed', updatePlan);
+  document.addEventListener('click', event => {
+    if (event.target.closest('[data-lang]')) setTimeout(updatePlan, 0);
+  });
   updatePlan();
 })();
