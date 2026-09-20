@@ -73,7 +73,7 @@
   function renderMarkers() {
     markers.innerHTML = (planMarkers[place.value] || []).filter(([fridge]) => !(window.FUSE_CURRENT_PROFILE === 'la-demence' && place.value === 'Bar 1 - Main room' && fridge === 'Frigo Redbull 17')).map(([fridge, label, left, top]) => {
       const state = fridgeState(fridge);
-      return `<span class="fridge-marker ${state}" title="${fridge}" style="left:${left}%;top:${top}%">${label}</span>`;
+      return `<button class="fridge-marker ${state}" type="button" data-fridge="${fridge}" title="Ouvrir ${fridge}" aria-label="Ouvrir ${fridge}" style="left:${left}%;top:${top}%">${label}</button>`;
     }
     ).join('');
   }
@@ -109,6 +109,15 @@
 
   place.addEventListener('change', () => setTimeout(updatePlan, 0));
   place.addEventListener('input', () => setTimeout(updatePlan, 0));
+  markers.addEventListener('click', event => {
+    const marker = event.target.closest('[data-fridge]');
+    if (!marker) return;
+    const selected = marker.dataset.fridge;
+    if (![...document.querySelector('#fridge').options].some(option => option.value === selected)) return;
+    document.querySelector('#fridge').value = selected;
+    document.querySelector('#fridge').dispatchEvent(new Event('change', { bubbles: true }));
+    document.querySelector('#fridge').dispatchEvent(new Event('input', { bubbles: true }));
+  });
   document.addEventListener('fuse:fridge-finished', renderMarkers);
   document.addEventListener('fuse:fridge-progress', renderMarkers);
   document.addEventListener('fuse-profile-changed', updatePlan);
