@@ -23,6 +23,7 @@
     <button class="primary hidden" id="validateFridge" type="button">Valider le résultat du frigo</button>
     <section class="manual-validation"><b>Validation manuelle</b><p class="small">Disponible même sans photo ou malgré un écart. Elle ne supprime pas les anomalies déjà enregistrées dans le rapport.</p><div class="actions"><button class="secondary" id="manualShelf" type="button">Valider cet étage</button><button class="primary" id="manualFridge" type="button">Valider tout le frigo</button></div><p class="small" id="manualNote"></p></section>
     <section class="manual-validation"><b>Reprendre un contrôle</b><p class="small">Tu peux refaire une photo ou recommencer un relevé, même après validation.</p><div class="actions"><button class="secondary" id="redoShelf" type="button">Refaire cet étage</button><button class="secondary" id="redoFridge" type="button">Reprendre tout le frigo</button></div><p class="small" id="redoNote"></p></section>
+    <section class="manual-validation"><b>Remise à zéro</b><p class="small">Efface entièrement le relevé, les erreurs et les validations de ce frigo pour repartir de zéro.</p><button class="secondary" id="resetFridge" type="button">Réinitialiser ce frigo</button><p class="small" id="resetNote"></p></section>
     <p id="fridgeState" class="status-code orange">● À photographier et contrôler.</p>`;
   individualPhotoCard.before(panel);
 
@@ -169,6 +170,31 @@
     q('#redoNote').textContent = 'Le frigo est repassé en contrôle. Reprends les photos du haut vers le bas.';
     document.dispatchEvent(new Event('fuse:fridge-progress'));
     updateProgress(); state();
+  });
+  q('#resetFridge').addEventListener('click', () => {
+    const language = localStorage.getItem('fuse-language') || 'fr';
+    const messages = {
+      fr: `Réinitialiser entièrement ${fridge.value} ? Les étages, photos et validations de ce frigo seront effacés.`,
+      nl: `${fridge.value} volledig resetten? De niveaus, foto's en validaties van deze koelkast worden gewist.`,
+      en: `Completely reset ${fridge.value}? This fridge’s shelves, photos, and validations will be erased.`
+    };
+    if (!window.confirm(messages[language] || messages.fr)) return;
+    files = [];
+    retakeShelf = '';
+    shelfNames().forEach(name => localStorage.removeItem(shelfKey(name)));
+    localStorage.removeItem(fridgeKey());
+    q('#nextFridgeInput').value = '';
+    q('#importFridgeInput').value = '';
+    q('#floorResults').classList.add('hidden');
+    q('#validateFridge').classList.add('hidden');
+    q('#analysisNotice').textContent = '';
+    q('#manualNote').textContent = '';
+    q('#redoNote').textContent = '';
+    q('#resetNote').textContent = 'Frigo réinitialisé : il est de nouveau blanc et prêt pour un nouvel inventaire.';
+    document.dispatchEvent(new Event('fuse:fridge-progress'));
+    document.dispatchEvent(new Event('fuse:fridge-reset'));
+    updateProgress();
+    state();
   });
   place.addEventListener('change', () => setTimeout(refresh, 0));
   fridge.addEventListener('change', () => setTimeout(refresh, 0));
