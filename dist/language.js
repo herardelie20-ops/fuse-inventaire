@@ -87,7 +87,11 @@
   style.textContent = '.language-switcher{position:fixed;right:12px;bottom:12px;z-index:30;display:flex;background:#111;border:1px solid #555;border-radius:999px;padding:2px;box-shadow:0 4px 14px #0005}.language-switcher button{padding:4px 7px;border-radius:999px;background:transparent;color:#fff;font-size:11px;letter-spacing:.04em}.language-switcher button.active{background:#fff;color:#000}.profile-demence .language-switcher{background:#fff;border-color:#fff}.profile-demence .language-switcher button{color:#111}.profile-demence .language-switcher button.active{background:#ff72b3;color:#fff}@media print{.language-switcher{display:none}}';
   document.head.append(style); document.body.append(chooser);
   function choose(language) {
-    localStorage.setItem('fuse-language', language); chooser.querySelectorAll('button').forEach(button => button.classList.toggle('active', button.dataset.lang === language)); apply();
+    localStorage.setItem('fuse-language', language);
+    window.FUSE_LANGUAGE = language;
+    chooser.querySelectorAll('button').forEach(button => button.classList.toggle('active', button.dataset.lang === language));
+    apply();
+    document.dispatchEvent(new CustomEvent('fuse-language-changed', { detail: { language } }));
   }
   chooser.addEventListener('click', event => { const button = event.target.closest('button'); if (button) choose(button.dataset.lang); });
   const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) apply(node.nodeType === Node.TEXT_NODE ? node.parentElement : node); })));

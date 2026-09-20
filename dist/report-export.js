@@ -79,6 +79,10 @@
     const selected = names.filter(name => title.includes(name));
     return selected.length ? selected : (title.includes('Rapport général') ? names : []);
   }
+  function localizedPlan(name) {
+    const source = barPlans[name];
+    return (localStorage.getItem('fuse-language') || 'fr') === 'nl' ? source.replace('.png', '-nl.png') : source;
+  }
   function asBytes(value) { return value instanceof Uint8Array ? value : bytes(value); }
   function joinBytes(parts) {
     const total = parts.reduce((sum, part) => sum + part.length, 0); const output = new Uint8Array(total); let offset = 0;
@@ -114,7 +118,7 @@
     });
     footer(); finish();
     const plans = await Promise.all(plansForReport().map(async name => {
-      try { return await loadPlan(name, barPlans[name]); } catch { return null; }
+      try { return await loadPlan(name, localizedPlan(name)); } catch { return null; }
     }));
     const validPlans = plans.filter(Boolean);
     validPlans.forEach(plan => {

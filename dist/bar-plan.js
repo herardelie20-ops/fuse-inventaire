@@ -88,7 +88,8 @@
     if (!planImage) return;
     title.textContent = `Plan — ${place.value}`;
     if (planImage) {
-      image.src = planImage;
+      const language = window.FUSE_LANGUAGE || localStorage.getItem('fuse-language') || 'fr';
+      image.src = language === 'nl' ? planImage.replace('.png', '-nl.png') : planImage;
       image.hidden = false;
       if (place.value.startsWith('Bar ')) {
         note.textContent = 'Repères de suivi : blanc à faire, orange en cours, rouge avec erreur, vert validé.';
@@ -111,5 +112,6 @@
   document.addEventListener('fuse:fridge-finished', renderMarkers);
   document.addEventListener('fuse:fridge-progress', renderMarkers);
   document.addEventListener('fuse-profile-changed', updatePlan);
+  document.addEventListener('fuse-language-changed', updatePlan);
   updatePlan();
 })();
