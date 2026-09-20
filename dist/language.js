@@ -89,9 +89,10 @@
   function choose(language) {
     localStorage.setItem('fuse-language', language);
     window.FUSE_LANGUAGE = language;
+    document.documentElement.lang = language === 'nl' ? 'nl' : language === 'en' ? 'en' : 'fr';
     chooser.querySelectorAll('button').forEach(button => button.classList.toggle('active', button.dataset.lang === language));
-    apply();
     document.dispatchEvent(new CustomEvent('fuse-language-changed', { detail: { language } }));
+    apply();
   }
   chooser.addEventListener('click', event => { const button = event.target.closest('button'); if (button) choose(button.dataset.lang); });
   const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) apply(node.nodeType === Node.TEXT_NODE ? node.parentElement : node); })));
