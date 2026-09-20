@@ -17,6 +17,12 @@
       'Télécharger le rapport': 'Rapport downloaden', 'Nouveau': 'Nieuw', 'Boisson': 'Drank', 'Quantité': 'Aantal',
       'Blanc : frigo pas encore commencé.': 'Wit: koelkast nog niet gestart.', 'Repères de suivi : blanc à faire, orange en cours, rouge avec erreur, vert validé.': 'Status: wit te doen, oranje bezig, rood met fout, groen gevalideerd.',
       'IA de vision locale': 'Lokale visuele AI', 'Moteur IA local installé. Le modèle Fuse doit encore être entraîné puis ajouté.': 'Lokale AI-motor geïnstalleerd. Het Fuse-model moet nog worden getraind en toegevoegd.',
+      'Prends les photos dans l’ordre : étage 1 (tout en haut), puis les étages inférieurs. Une seule analyse regroupera le décompte par étage.': 'Neem de foto’s in volgorde: niveau 1 (helemaal bovenaan), daarna de lagere niveaus. Eén analyse groepeert de telling per niveau.',
+      'Disponible même sans photo ou malgré un écart. Elle ne supprime pas les anomalies déjà enregistrées dans le rapport.': 'Beschikbaar zonder foto of ondanks een afwijking. Dit verwijdert geen afwijkingen die al in het rapport staan.',
+      'Tu peux refaire une photo ou recommencer un relevé, même après validation.': 'Je kunt een foto opnieuw nemen of een telling opnieuw doen, ook na validatie.',
+      'Le bar deviendra vert automatiquement lorsque tous les étages de tous les frigos seront validés.': 'De bar wordt automatisch groen wanneer alle niveaus van alle koelkasten zijn gevalideerd.',
+      'Vérifie le rapport final avant de le télécharger, l’envoyer par SMS ou par e-mail.': 'Controleer het eindrapport voordat je het downloadt, per sms of e-mail verstuurt.',
+      'Choisis un téléphone ou une adresse e-mail. L’application prépare le message ; l’envoi final se fait dans ton application SMS ou e-mail.': 'Kies een telefoonnummer of e-mailadres. De app bereidt het bericht voor; de definitieve verzending gebeurt in je sms- of e-mailapp.',
       'Rapport général - Fuse': 'Algemeen rapport - Fuse', 'Profil :': 'Profiel:', 'Plan —': 'Plan —', 'À définir': 'Te bepalen', 'Aucun produit validé': 'Geen gevalideerd product',
       'FRIGOS ET BAHUTS - PAR BAR': 'KOELKASTEN EN KASTEN — PER BAR', 'STOCKS - PAR ZONE': 'VOORRADEN — PER ZONE', 'TOTAL GÉNÉRAL': 'ALGEMEEN TOTAAL'
     },
@@ -37,6 +43,12 @@
       'Télécharger le rapport': 'Download report', 'Nouveau': 'New', 'Boisson': 'Drink', 'Quantité': 'Quantity',
       'Blanc : frigo pas encore commencé.': 'White: fridge not started yet.', 'Repères de suivi : blanc à faire, orange en cours, rouge avec erreur, vert validé.': 'Status: white to do, orange in progress, red with an error, green validated.',
       'IA de vision locale': 'Local vision AI', 'Moteur IA local installé. Le modèle Fuse doit encore être entraîné puis ajouté.': 'Local AI engine installed. The Fuse model still needs training and adding.',
+      'Prends les photos dans l’ordre : étage 1 (tout en haut), puis les étages inférieurs. Une seule analyse regroupera le décompte par étage.': 'Take the photos in order: shelf 1 (at the very top), then the lower shelves. One analysis groups the count by shelf.',
+      'Disponible même sans photo ou malgré un écart. Elle ne supprime pas les anomalies déjà enregistrées dans le rapport.': 'Available without a photo or despite a discrepancy. It does not remove anomalies already recorded in the report.',
+      'Tu peux refaire une photo ou recommencer un relevé, même après validation.': 'You can retake a photo or restart a count, even after validation.',
+      'Le bar deviendra vert automatiquement lorsque tous les étages de tous les frigos seront validés.': 'The bar turns green automatically when every shelf of every fridge has been validated.',
+      'Vérifie le rapport final avant de le télécharger, l’envoyer par SMS ou par e-mail.': 'Check the final report before downloading it or sending it by SMS or email.',
+      'Choisis un téléphone ou une adresse e-mail. L’application prépare le message ; l’envoi final se fait dans ton application SMS ou e-mail.': 'Choose a phone number or email address. The app prepares the message; final sending happens in your SMS or email app.',
       'Rapport général - Fuse': 'General report - Fuse', 'Profil :': 'Profile:', 'Plan —': 'Plan —', 'À définir': 'To be defined', 'Aucun produit validé': 'No validated product',
       'FRIGOS ET BAHUTS - PAR BAR': 'FRIDGES AND CABINETS — BY BAR', 'STOCKS - PAR ZONE': 'STOCKS — BY AREA', 'TOTAL GÉNÉRAL': 'GRAND TOTAL'
     }
@@ -47,8 +59,8 @@
     if (language === 'fr') return value;
     const table = translations[language] || {}; let result = table[value] || value;
     const replacements = language === 'nl'
-      ? [['Rapport détaillé — ', 'Gedetailleerd rapport — '], ['Rapport général', 'Algemeen rapport'], ['Plan ', 'Plan '], ['Étage ', 'Niveau '], ['Frigo ', 'Koelkast '], ['bouteilles', 'flessen'], ['bouteille', 'fles'], ['à confirmer', 'te bevestigen'], ['à définir', 'te bepalen'], ['validé', 'gevalideerd'], ['en cours', 'bezig']]
-      : [['Rapport détaillé — ', 'Detailed report — '], ['Rapport général', 'General report'], ['Étage ', 'Shelf '], ['Frigo ', 'Fridge '], ['bouteilles', 'bottles'], ['bouteille', 'bottle'], ['à confirmer', 'to confirm'], ['à définir', 'to be defined'], ['validé', 'validated'], ['en cours', 'in progress']];
+      ? [['Rapport détaillé — ', 'Gedetailleerd rapport — '], ['Rapport général', 'Algemeen rapport'], ['Étage ', 'Niveau '], ['Frigo ', 'Koelkast '], ['haut', 'boven'], ['rez-de-chaussée', 'gelijkvloers'], ['photo ajoutée', 'foto toegevoegd'], ['suivante', 'volgende'], ['bouteilles', 'flessen'], ['bouteille', 'fles'], ['à confirmer', 'te bevestigen'], ['à définir', 'te bepalen'], ['validés', 'gevalideerd'], ['validé', 'gevalideerd'], ['en cours', 'bezig']]
+      : [['Rapport détaillé — ', 'Detailed report — '], ['Rapport général', 'General report'], ['Étage ', 'Shelf '], ['Frigo ', 'Fridge '], ['haut', 'top'], ['rez-de-chaussée', 'ground level'], ['photo ajoutée', 'photo added'], ['suivante', 'next'], ['bouteilles', 'bottles'], ['bouteille', 'bottle'], ['à confirmer', 'to confirm'], ['à définir', 'to be defined'], ['validés', 'validated'], ['validé', 'validated'], ['en cours', 'in progress']];
     replacements.forEach(([from, to]) => { result = result.replaceAll(from, to); }); return result;
   }
   function apply(root = document.body) {
