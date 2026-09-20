@@ -88,7 +88,7 @@
     if (!planImage) return;
     title.textContent = `Plan — ${place.value}`;
     if (planImage) {
-      const language = window.FUSE_LANGUAGE || localStorage.getItem('fuse-language') || 'fr';
+      const language = localStorage.getItem('fuse-language') || window.FUSE_LANGUAGE || 'fr';
       image.src = language === 'nl' ? planImage.replace('.png', '-nl.png') : planImage;
       image.hidden = false;
       if (place.value.startsWith('Bar ')) {
