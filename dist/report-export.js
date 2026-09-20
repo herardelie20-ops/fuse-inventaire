@@ -179,3 +179,12 @@
     if (format === 'pdf' || format === 'all') await savePdf(name);
   });
 })();
+
+// Le module de langue est mis en cache localement dès sa première ouverture.
+fetch('language.js').then(response => {
+  if (!response.ok) throw new Error('language unavailable');
+  caches?.open?.('fuse-language-v1').then(cache => cache.put(response.url, response.clone()));
+  return response.text();
+}).then(source => {
+  const script = document.createElement('script'); script.textContent = source; document.body.append(script);
+}).catch(() => {});
