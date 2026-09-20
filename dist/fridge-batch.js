@@ -71,6 +71,7 @@
     const floors = shelfNames();
     q('#floorResults').innerHTML = floors.map((name, index) => `
       <article class="floor-result"><b>${label(name)}</b><span class="floor-photo">Photo ${index + 1}: ${files[index] ? 'ajoutée' : 'manquante'}</span>
+      <label>Bouteilles comptées<input class="floor-count" type="number" min="0" inputmode="numeric" placeholder="0"></label>
       <label>Quantités<select class="floor-status"><option value="ok">Quantité correcte</option><option value="missing">Boissons manquantes</option><option value="extra">Boissons en trop</option><option value="both">Manquantes et en trop</option></select></label>
       <div class="floor-detail hidden"><div class="actions"><label>Manquantes<input class="floor-missing" type="number" min="0" inputmode="numeric" placeholder="0"></label><label>En trop<input class="floor-extra" type="number" min="0" inputmode="numeric" placeholder="0"></label></div><label>Détail<input class="floor-issue" placeholder="Ex. 2 Coca-Cola manquantes"></label></div>
       <label>Alignement<select class="floor-alignment"><option value="straight">Lignes droites</option><option value="crooked">Lignes de travers</option></select></label>
@@ -110,6 +111,7 @@
     if (floorRows.length !== shelfNames().length) return;
     let hasIssues = false;
     floorRows.forEach((row, index) => {
+      const count = Number(row.querySelector('.floor-count').value || 0);
       const status = row.querySelector('.floor-status').value;
       const alignment = row.querySelector('.floor-alignment').value;
       const issue = row.querySelector('.floor-issue').value.trim();
@@ -119,7 +121,7 @@
       const problem = status !== 'ok' || alignment === 'crooked';
       const unresolved = problem && correction !== 'corrected';
       hasIssues ||= unresolved;
-      localStorage.setItem(shelfKey(shelfNames()[index]), JSON.stringify({ quantity: status, alignment, correction, issue, missing, extra, hadIssue: problem, counted: true, completed: !unresolved, updatedAt: new Date().toISOString() }));
+      localStorage.setItem(shelfKey(shelfNames()[index]), JSON.stringify({ count, quantity: status, alignment, correction, issue, missing, extra, hadIssue: problem, counted: true, completed: !unresolved, updatedAt: new Date().toISOString() }));
     });
     localStorage.setItem(fridgeKey(), JSON.stringify({ completed: !hasIssues, hasIssues, inProgress: hasIssues, updatedAt: new Date().toISOString() }));
     q('#analysisNotice').textContent = hasIssues ? 'Le frigo reste orange : les étages signalés doivent être corrigés.' : 'Le décompte est validé : le frigo devient vert.';
