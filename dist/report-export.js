@@ -218,6 +218,9 @@ fetch('language.js?v=4').then(response => {
   const planInfoStyle = document.createElement('style');
   planInfoStyle.textContent = '.plan-info{display:flex;flex-wrap:wrap;gap:7px 12px;align-items:center;margin:9px 0 0;color:#aeb8b5;font-size:.72rem;line-height:1.35}.plan-info #barPlanNote{margin:0}.plan-state{font-weight:850}.plan-state.white{color:#fff}.plan-state.orange{color:#ffad52}.plan-state.red{color:#ff6b6b}.plan-state.green{color:#62dd87}.plan-info .plan-status{margin:0!important;display:flex;gap:5px;align-items:baseline}.plan-info .plan-status b{display:none}.plan-info .plan-status .small{margin:0;font-size:.72rem}';
   document.head.append(planInfoStyle);
+  const reportFlowStyle = document.createElement('style');
+  reportFlowStyle.textContent = '.report-kind{display:grid;gap:5px;margin:0 0 10px;color:#cfcfcf;font-size:.78rem}.report-kind select{padding:9px}.report-hub .report-preview>b,.report-hub .report-preview>p,.report-hub #previewReport{display:none!important}';
+  document.head.append(reportFlowStyle);
 
   const launcher = document.createElement('button');
   launcher.className = 'primary counting-launch'; launcher.type = 'button';
@@ -252,14 +255,15 @@ fetch('language.js?v=4').then(response => {
 
   if (detailed || complete || preview || share) {
     const hub = document.createElement('section'); hub.className = 'card report-hub';
-    hub.innerHTML = `<header><h2>Rapports</h2><p>Prépare, vérifie et envoie depuis le même espace.</p></header><div class="report-action-grid" id="reportActions"></div><div class="report-section hidden" id="reportPreviewSlot"></div><div class="report-section hidden" id="reportShareSlot"></div>`;
+    hub.innerHTML = `<header><h2>Rapports</h2><p>Choisis le rapport, vérifie-le, puis envoie-le.</p></header><label class="report-kind">Type de rapport<select id="reportKind"><option value="bar">Rapport du bar</option><option value="complete">Rapport complet</option></select></label><div class="report-action-grid" id="reportActions"></div><div class="report-section hidden" id="reportPreviewSlot"></div><div class="report-section hidden" id="reportShareSlot"></div>`;
     (plan || selectorCard).after(hub);
     hub.before(launcher);
     const actions = hub.querySelector('#reportActions');
     const addAction = (label, handler) => { const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary'; button.textContent = label; button.addEventListener('click', handler); actions.append(button); };
-    if (detailed) { detailed.classList.remove('card'); detailed.hidden = true; hub.append(detailed); addAction('Rapport du bar', () => detailed.querySelector('#detailedReport')?.click()); }
-    if (complete) { complete.classList.remove('card'); complete.hidden = true; hub.append(complete); addAction('Rapport complet', () => complete.querySelector('#comprehensiveReport')?.click()); }
-    if (preview) { preview.classList.remove('card'); hub.querySelector('#reportPreviewSlot').append(preview); addAction('Aperçu', () => { hub.querySelector('#reportPreviewSlot').classList.remove('hidden'); preview.querySelector('#previewReport')?.click(); }); }
+    if (detailed) { detailed.classList.remove('card'); detailed.hidden = true; hub.append(detailed); }
+    if (complete) { complete.classList.remove('card'); complete.hidden = true; hub.append(complete); }
+    const generateReport = () => { (hub.querySelector('#reportKind').value === 'complete' ? complete : detailed)?.querySelector('button')?.click(); };
+    if (preview) { preview.classList.remove('card'); hub.querySelector('#reportPreviewSlot').append(preview); addAction('Aperçu du rapport', () => { generateReport(); hub.querySelector('#reportPreviewSlot').classList.remove('hidden'); preview.querySelector('#previewReport')?.click(); }); }
     if (share) { share.classList.remove('card'); hub.querySelector('#reportShareSlot').append(share); addAction('Envoyer', () => { hub.querySelector('#reportShareSlot').classList.remove('hidden'); share.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }); }
   }
 })();

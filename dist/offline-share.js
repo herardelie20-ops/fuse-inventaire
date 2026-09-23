@@ -20,7 +20,7 @@
 
   const share = document.createElement('section');
   share.className = 'card report-share';
-  share.innerHTML = `<b>Envoyer le rapport</b><p class="small">Choisis un téléphone ou une adresse e-mail. L’application prépare le message ; l’envoi final se fait dans ton application SMS ou e-mail.</p><label>Destinataire<select id="sendMethod"><option value="sms">Numéro de téléphone</option><option value="email">Adresse e-mail</option><option value="share">Choisir une application</option></select></label><label id="recipientLabel">Numéro de téléphone<input id="recipient" type="tel" inputmode="tel" placeholder="Ex. +32 470 00 00 00"></label><button class="primary" id="sendReport" type="button">Préparer l’envoi</button><p class="small" id="sendStatus"></p>`;
+  share.innerHTML = `<b>Envoyer le rapport</b><p class="small">Choisis un téléphone ou une adresse e-mail, puis valide l’envoi.</p><label>Destinataire<select id="sendMethod"><option value="sms">Numéro de téléphone</option><option value="email">Adresse e-mail</option><option value="share">Choisir une application</option></select></label><label id="recipientLabel">Numéro de téléphone<input id="recipient" type="tel" inputmode="tel" placeholder="Ex. +32 470 00 00 00"></label><button class="primary" id="sendReport" type="button">Valider et envoyer</button><p class="small" id="sendStatus"></p>`;
   preview.after(share);
 
   const q = id => share.querySelector(id);
