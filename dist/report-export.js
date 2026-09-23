@@ -185,9 +185,9 @@
 })();
 
 // Le module de langue est mis en cache localement dès sa première ouverture.
-fetch('language.js?v=3').then(response => {
+fetch('language.js?v=4').then(response => {
   if (!response.ok) throw new Error('language unavailable');
-  caches?.open?.('fuse-language-v3').then(cache => cache.put(response.url, response.clone()));
+  caches?.open?.('fuse-language-v4').then(cache => cache.put(response.url, response.clone()));
   return response.text();
 }).then(source => {
   const script = document.createElement('script'); script.textContent = source; document.body.append(script);
