@@ -83,8 +83,11 @@
     document.dispatchEvent(new Event('fuse:fridge-progress'));
   }
   function finishIfAllShelvesDone() {
-    const allDone = shelfNames().every(name => read(shelfKey(name))?.completed);
-    localStorage.setItem(fridgeKey(), JSON.stringify({ completed: allDone, inProgress: !allDone, manualValidated: allDone, updatedAt: new Date().toISOString() }));
+    const allDone = shelfNames().every(name => {
+      const record = read(shelfKey(name));
+      return record?.completed && Array.isArray(record.referenceLines) && record.referenceLines.length > 0;
+    });
+    localStorage.setItem(fridgeKey(), JSON.stringify({ completed: allDone, inProgress: !allDone, manualValidated: allDone, editValidated: allDone, updatedAt: new Date().toISOString() }));
     document.dispatchEvent(new Event(allDone ? 'fuse:fridge-finished' : 'fuse:fridge-progress'));
     return allDone;
   }
@@ -185,7 +188,7 @@
       const total = referenceLines.reduce((sum, item) => sum + item.quantity, 0);
       localStorage.setItem(shelfKey(name), JSON.stringify({ ...existing, referenceLines, count: total, quantity: 'manual', alignment: 'manual', hadIssue: false, analysisSource: 'manual', counted: true, completed: true, manualValidated: true, referenceSavedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
       finishIfAllShelvesDone();
-      note.textContent = `${referenceLines.length} ligne(s) enregistrée(s) · ${total} boisson(s).`;
+      note.textContent = `${referenceLines.length} ligne(s) enregistrée(s) · ${total} boisson(s). Le frigo deviendra vert dès que tous les étages seront enregistrés.`;
       floor.querySelector('summary small').textContent = `${referenceLines.length} ligne(s) · ${total} boisson(s)`;
       document.dispatchEvent(new Event('fuse:fridge-progress'));
       state();

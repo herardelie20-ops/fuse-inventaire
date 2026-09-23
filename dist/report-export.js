@@ -292,6 +292,8 @@ fetch('language.js?v=8').then(response => {
   const state = card.querySelector('#referenceState');
   const copy = (fr, nl, en) => ({ fr, nl, en })[localStorage.getItem('fuse-language') || 'fr'];
   const key = () => `fuse-shelf-${place.value}-${fridge.value}-${shelf.value}`;
+  const fridgeKey = () => `fuse-check-${place.value}-${fridge.value}`;
+  const shelfNames = () => [...shelf.options].map(option => option.value);
   const isFridgeShelf = () => place.value.startsWith('Bar ') && !/^Bahut\b/i.test(fridge.value);
   const read = () => { try { return JSON.parse(localStorage.getItem(key())); } catch { return null; } };
   const addLine = item => {
@@ -322,7 +324,11 @@ fetch('language.js?v=8').then(response => {
     }).filter(item => item.name);
     if (!referenceLines.length) { state.textContent = copy('Ajoute au moins une boisson avant d’enregistrer.', 'Voeg minstens één drank toe voordat je opslaat.', 'Add at least one drink before saving.'); return; }
     const current = read() || {}; const total = referenceLines.reduce((sum, item) => sum + item.quantity, 0);
-    localStorage.setItem(key(), JSON.stringify({ ...current, referenceLines, count: total, counted: true, referenceSavedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+    localStorage.setItem(key(), JSON.stringify({ ...current, referenceLines, count: total, quantity: 'manual', alignment: 'manual', hadIssue: false, analysisSource: 'manual', counted: true, completed: true, manualValidated: true, referenceSavedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+    const allDone = shelfNames().every(name => {
+      try { const record = JSON.parse(localStorage.getItem(`fuse-shelf-${place.value}-${fridge.value}-${name}`)); return record?.completed && Array.isArray(record.referenceLines) && record.referenceLines.length > 0; } catch { return false; }
+    });
+    localStorage.setItem(fridgeKey(), JSON.stringify({ completed: allDone, inProgress: !allDone, manualValidated: allDone, editValidated: allDone, updatedAt: new Date().toISOString() }));
     state.textContent = copy(`Référence enregistrée : ${referenceLines.length} ligne(s), ${total} boisson(s).`, `Referentie opgeslagen: ${referenceLines.length} regel(s), ${total} drank(en).`, `Reference saved: ${referenceLines.length} row(s), ${total} drink(s).`);
     document.dispatchEvent(new Event('fuse:fridge-progress'));
   });
