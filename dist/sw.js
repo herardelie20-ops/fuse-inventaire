@@ -1,4 +1,4 @@
-const C='fuse-frigos-v27';
+const C='fuse-frigos-v28';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./favicon.svg','./app.js','./bahut-mode.js','./bar-plan.js','./catalog.js','./checklist.js','./comprehensive-report.js','./fridge-batch.js','./fridges.js','./final-report.js','./fuse-logo.png','./la-demence-logo.png','./live-status.js','./location-validation.js','./local-vision.js','./vendor/onnx/ort.min.js','./vendor/onnx/ort-wasm-simd-threaded.mjs','./vendor/onnx/ort-wasm-simd-threaded.wasm','./logo.js','./offline-share.js','./photo-ui.js','./plan-bar-1.png','./plan-bar-2.png','./plan-bar-3.png','./plan-bar-4.png','./products.js','./report-export.js','./report-timing.js','./profile-inventory.js','./shelves.js','./stock-mode.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(C).then(cache=>cache.addAll([...ASSETS,'./plan-bar-1-nl.png','./plan-bar-2-nl.png','./plan-bar-3-nl.png','./plan-bar-4-nl.png'])).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==C).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));

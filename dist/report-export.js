@@ -226,23 +226,17 @@ fetch('language.js?v=8').then(response => {
   launcher.className = 'primary counting-launch'; launcher.type = 'button';
   launcher.textContent = 'Ouvrir le comptage IA et les photos';
   (plan || selectorCard).after(launcher);
-  const setupLauncher = document.createElement('button');
-  setupLauncher.className = 'secondary setup-launch'; setupLauncher.type = 'button';
-  setupLauncher.textContent = 'Configurer les étages du frigo';
-  launcher.after(setupLauncher);
-
   const modal = document.createElement('section');
   modal.className = 'counting-modal hidden'; modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
   modal.innerHTML = `<div class="counting-sheet"><header class="counting-sheet-head"><div><h2>Comptage IA</h2><p id="countingContext"></p></div><button class="counting-sheet-close" type="button" aria-label="Fermer">×</button></header><div id="countingAI" class="counting-tab-panel"></div></div>`;
   document.body.append(modal);
   const aiWorkspace = modal.querySelector('#countingAI');
   [photoCard, batch].filter(Boolean).forEach(element => aiWorkspace.append(element));
-  const inlineEditor = batch?.querySelector('#manualShelfEditor');
-  if (inlineEditor) setupLauncher.after(inlineEditor);
+  batch?.querySelector('#manualShelfEditor')?.remove();
   const context = modal.querySelector('#countingContext');
   const open = () => { context.textContent = `${document.querySelector('#bar')?.value || ''} · ${document.querySelector('#fridge')?.value || ''}`; modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; modal.querySelector('#camera, #nextFridgePhoto')?.focus(); };
   const close = () => { modal.classList.add('hidden'); document.body.style.overflow = ''; launcher.focus(); };
-  launcher.addEventListener('click', open); setupLauncher.addEventListener('click', () => { document.dispatchEvent(new Event('fuse:open-manual-shelves')); inlineEditor?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); modal.querySelector('.counting-sheet-close').addEventListener('click', close);
+  launcher.addEventListener('click', open); modal.querySelector('.counting-sheet-close').addEventListener('click', close);
   modal.addEventListener('click', event => { if (event.target === modal) close(); });
   window.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
 
