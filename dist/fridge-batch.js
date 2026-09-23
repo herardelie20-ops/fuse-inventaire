@@ -7,6 +7,9 @@
   const individualLinesCard = document.querySelector('#lines')?.closest('.card');
   const individualChecklistCard = document.querySelector('#stateSummary')?.closest('.card');
   if (!place || !fridge || !shelf || !save) return;
+  const manualStyle = document.createElement('style');
+  manualStyle.textContent = '.manual-shelf-editor{margin-top:16px;padding-top:14px;border-top:1px solid #444}.manual-shelf{margin:10px 0;border:1px solid #4d4d4d;border-radius:10px;overflow:hidden}.manual-shelf summary{display:flex;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;font-weight:800}.manual-shelf summary small{color:#cfcfcf;font-weight:500;text-align:right}.manual-shelf-body{padding:0 12px 12px;border-top:1px solid #444}.manual-catalogue{max-height:220px;overflow:auto;border:1px solid #555;border-radius:8px;padding:8px;margin:8px 0}.manual-category{margin:7px 0}.manual-category>b{display:block;font-size:.78rem;color:#cfcfcf;margin-bottom:5px}.manual-category>div{display:flex;flex-wrap:wrap;gap:6px}.manual-product{padding:6px 8px;border-radius:999px;background:#242424;color:#fff;font-size:.78rem}.manual-drink-lines{display:grid;gap:8px;margin:10px 0}.manual-drink-line{display:grid;grid-template-columns:1fr 76px 34px;gap:8px}.manual-drink-line input{min-width:0}.manual-remove{background:#333;color:#fff;padding:8px}.manual-add-line{width:100%;margin:2px 0 8px}.manual-save-shelf{width:100%}.manual-save-note{margin:8px 0 0;min-height:1.2em}';
+  document.head.append(manualStyle);
 
   const panel = document.createElement('section');
   panel.className = 'card fridge-batch hidden';
@@ -22,6 +25,7 @@
     <div id="floorResults" class="hidden"></div>
     <button class="primary hidden" id="validateFridge" type="button">Valider le résultat du frigo</button>
     <section class="manual-validation"><b>Validation manuelle</b><p class="small">Disponible même sans photo ou malgré un écart. Elle ne supprime pas les anomalies déjà enregistrées dans le rapport.</p><div class="actions"><button class="secondary" id="manualShelf" type="button">Valider cet étage</button><button class="primary" id="manualFridge" type="button">Valider tout le frigo</button></div><p class="small" id="manualNote"></p></section>
+    <section class="manual-shelf-editor" id="manualShelfEditor"><b>Saisie manuelle par étage</b><p class="small">Ouvre un étage, cherche une boisson ou choisis-la dans le catalogue, puis indique la quantité présente sur chaque ligne.</p><div id="manualShelfList"></div></section>
     <section class="manual-validation"><b>Reprendre un contrôle</b><p class="small">Tu peux refaire une photo ou recommencer un relevé, même après validation.</p><div class="actions"><button class="secondary" id="redoShelf" type="button">Refaire cet étage</button><button class="secondary" id="redoFridge" type="button">Reprendre tout le frigo</button></div><p class="small" id="redoNote"></p></section>
     <section class="manual-validation"><b>Remise à zéro</b><p class="small">Efface entièrement le relevé, les erreurs et les validations de ce frigo pour repartir de zéro.</p><button class="secondary" id="resetFridge" type="button">Réinitialiser ce frigo</button><p class="small" id="resetNote"></p></section>
     <p id="fridgeState" class="status-code orange">● À photographier et contrôler.</p>`;
@@ -37,6 +41,22 @@
   let currentKey = '';
   let files = [];
   let retakeShelf = '';
+
+  const catalogue = () => [
+    ['Soft drinks', window.FUSE_SOFTS || []], ['Bières', window.FUSE_BEERS || []], ['Vins et spéciaux', window.FUSE_FRIDGE_SPECIALS || []], ['Spiritueux', window.FUSE_SPIRITS || []], ['Sirops', window.FUSE_SYRUPS || []]
+  ].map(([category, products]) => [category, [...products].sort((a, b) => a.localeCompare(b, 'fr'))]);
+  const lineMarkup = (item = {}) => `<div class="manual-drink-line"><input class="manual-drink-name" value="${String(item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" placeholder="Boisson"><input class="manual-drink-quantity" type="number" min="0" inputmode="numeric" value="${item.quantity ?? ''}" placeholder="0"><button type="button" class="manual-remove" aria-label="Supprimer">×</button></div>`;
+  function renderManualShelves() {
+    const list = q('#manualShelfList');
+    if (!list) return;
+    list.innerHTML = shelfNames().map(name => {
+      const record = read(shelfKey(name)) || {};
+      const entries = record.referenceLines || [];
+      const total = entries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+      const groups = catalogue().map(([category, products]) => `<section class="manual-category"><b>${category}</b><div>${products.map(product => `<button type="button" class="manual-product" data-product="${product}">${product}</button>`).join('')}</div></section>`).join('');
+      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${entries.length ? entries.map(lineMarkup).join('') : lineMarkup()}</div><button type="button" class="secondary manual-add-line">+ Ligne de boisson</button><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
+    }).join('');
+  }
 
   function label(name) {
     const drink = window.FUSE_EXPECTED_DRINK?.(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, name);
@@ -95,6 +115,7 @@
     if (!enabled) return;
     const key = `${place.value}|${fridge.value}|${shelfNames().join('|')}`;
     if (key !== currentKey) { currentKey = key; files = []; retakeShelf = ''; q('#floorResults').classList.add('hidden'); q('#validateFridge').classList.add('hidden'); q('#analysisNotice').textContent = ''; }
+    renderManualShelves();
     updateProgress(); state();
   }
   q('#nextFridgePhoto').addEventListener('click', () => q('#nextFridgeInput').click());
@@ -145,6 +166,41 @@
     q('#manualNote').textContent = 'Frigo validé manuellement en vert.';
     document.dispatchEvent(new Event('fuse:fridge-finished'));
     state();
+  });
+  q('#manualShelfList').addEventListener('click', event => {
+    const floor = event.target.closest('.manual-shelf');
+    if (!floor) return;
+    const lines = floor.querySelector('.manual-drink-lines');
+    if (event.target.closest('.manual-product')) {
+      lines.insertAdjacentHTML('beforeend', lineMarkup({ name: event.target.closest('.manual-product').dataset.product }));
+    }
+    if (event.target.closest('.manual-add-line')) lines.insertAdjacentHTML('beforeend', lineMarkup());
+    if (event.target.closest('.manual-remove')) event.target.closest('.manual-drink-line').remove();
+    if (event.target.closest('.manual-save-shelf')) {
+      const name = floor.dataset.shelf;
+      const referenceLines = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value.trim(), quantity: Number(row.querySelector('.manual-drink-quantity').value || 0) })).filter(item => item.name);
+      const note = floor.querySelector('.manual-save-note');
+      if (!referenceLines.length) { note.textContent = 'Ajoute au moins une boisson avant d’enregistrer.'; return; }
+      const existing = read(shelfKey(name)) || {};
+      const total = referenceLines.reduce((sum, item) => sum + item.quantity, 0);
+      localStorage.setItem(shelfKey(name), JSON.stringify({ ...existing, referenceLines, count: total, quantity: 'manual', alignment: 'manual', hadIssue: false, analysisSource: 'manual', counted: true, completed: true, manualValidated: true, referenceSavedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+      finishIfAllShelvesDone();
+      note.textContent = `${referenceLines.length} ligne(s) enregistrée(s) · ${total} boisson(s).`;
+      floor.querySelector('summary small').textContent = `${referenceLines.length} ligne(s) · ${total} boisson(s)`;
+      document.dispatchEvent(new Event('fuse:fridge-progress'));
+      state();
+    }
+  });
+  q('#manualShelfList').addEventListener('input', event => {
+    if (!event.target.matches('.manual-search')) return;
+    const query = event.target.value.trim().toLocaleLowerCase('fr');
+    const floor = event.target.closest('.manual-shelf');
+    floor.querySelectorAll('.manual-product').forEach(button => { button.hidden = !!query && !button.textContent.toLocaleLowerCase('fr').includes(query); });
+    floor.querySelectorAll('.manual-category').forEach(group => { group.hidden = ![...group.querySelectorAll('.manual-product')].some(button => !button.hidden); });
+  });
+  document.addEventListener('fuse:open-manual-shelves', () => {
+    renderManualShelves();
+    const first = q('.manual-shelf'); if (first) { first.open = true; first.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
   q('#redoShelf').addEventListener('click', () => {
     const position = shelfNames().indexOf(shelf.value);

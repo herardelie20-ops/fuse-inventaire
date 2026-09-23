@@ -187,9 +187,9 @@
 })();
 
 // Le module de langue est mis en cache localement dès sa première ouverture.
-fetch('language.js?v=7').then(response => {
+fetch('language.js?v=8').then(response => {
   if (!response.ok) throw new Error('language unavailable');
-  caches?.open?.('fuse-language-v7').then(cache => cache.put(response.url, response.clone()));
+  caches?.open?.('fuse-language-v8').then(cache => cache.put(response.url, response.clone()));
   return response.text();
 }).then(source => {
   const script = document.createElement('script'); script.textContent = source; document.body.append(script);
@@ -228,7 +228,7 @@ fetch('language.js?v=7').then(response => {
   (plan || selectorCard).after(launcher);
   const setupLauncher = document.createElement('button');
   setupLauncher.className = 'secondary setup-launch'; setupLauncher.type = 'button';
-  setupLauncher.textContent = 'Configurer le contenu du frigo';
+  setupLauncher.textContent = 'Configurer les étages du frigo';
   launcher.after(setupLauncher);
 
   const modal = document.createElement('section');
@@ -244,7 +244,7 @@ fetch('language.js?v=7').then(response => {
   const context = modal.querySelector('#countingContext');
   const open = (tab = 'ai') => { context.textContent = `${document.querySelector('#bar')?.value || ''} · ${document.querySelector('#fridge')?.value || ''}`; selectCountingTab(tab); modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; modal.querySelector(tab === 'manual' ? '#saveReference, #lines input' : '#camera, #nextFridgePhoto')?.focus(); };
   const close = () => { modal.classList.add('hidden'); document.body.style.overflow = ''; launcher.focus(); };
-  launcher.addEventListener('click', open); setupLauncher.addEventListener('click', () => open('manual')); modal.querySelector('.counting-sheet-close').addEventListener('click', close);
+  launcher.addEventListener('click', open); setupLauncher.addEventListener('click', () => { open('ai'); setTimeout(() => document.dispatchEvent(new Event('fuse:open-manual-shelves')), 0); }); modal.querySelector('.counting-sheet-close').addEventListener('click', close);
   modal.addEventListener('click', event => { if (event.target === modal) close(); });
   window.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
 
