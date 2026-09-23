@@ -187,9 +187,9 @@
 })();
 
 // Le module de langue est mis en cache localement dès sa première ouverture.
-fetch('language.js?v=4').then(response => {
+fetch('language.js?v=5').then(response => {
   if (!response.ok) throw new Error('language unavailable');
-  caches?.open?.('fuse-language-v4').then(cache => cache.put(response.url, response.clone()));
+  caches?.open?.('fuse-language-v5').then(cache => cache.put(response.url, response.clone()));
   return response.text();
 }).then(source => {
   const script = document.createElement('script'); script.textContent = source; document.body.append(script);
@@ -266,4 +266,62 @@ fetch('language.js?v=4').then(response => {
     if (preview) { preview.classList.remove('card'); hub.querySelector('#reportPreviewSlot').append(preview); addAction('Aperçu du rapport', () => { generateReport(); hub.querySelector('#reportPreviewSlot').classList.remove('hidden'); preview.querySelector('#previewReport')?.click(); }); }
     if (share) { share.classList.remove('card'); hub.querySelector('#reportShareSlot').append(share); addAction('Envoyer', () => { hub.querySelector('#reportShareSlot').classList.remove('hidden'); share.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }); }
   }
+})();
+
+// Première configuration : une référence précise est enregistrée pour chaque étage.
+(() => {
+  const workspace = document.querySelector('#countingManual');
+  const place = document.querySelector('#bar');
+  const fridge = document.querySelector('#fridge');
+  const shelf = document.querySelector('#shelf');
+  const lines = document.querySelector('#lines');
+  if (!workspace || !place || !fridge || !shelf || !lines) return;
+
+  const card = document.createElement('section');
+  card.className = 'card reference-editor';
+  card.innerHTML = `<b>Mode édition de référence</b><p class="small">Définis une première fois le contenu exact de cet étage, boisson par boisson. Cette base restera disponible pour les prochains contrôles.</p><p class="small" id="referenceState"></p><button class="primary" id="saveReference" type="button">Enregistrer la référence de l’étage</button>`;
+  workspace.prepend(card);
+
+  const style = document.createElement('style');
+  style.textContent = '.reference-editor{border-color:#708a78!important}.reference-editor #referenceState{color:#bde8c7;min-height:1.2em}.reference-editor button{width:100%}';
+  document.head.append(style);
+  const state = card.querySelector('#referenceState');
+  const copy = (fr, nl, en) => ({ fr, nl, en })[localStorage.getItem('fuse-language') || 'fr'];
+  const key = () => `fuse-shelf-${place.value}-${fridge.value}-${shelf.value}`;
+  const isFridgeShelf = () => place.value.startsWith('Bar ') && !/^Bahut\b/i.test(fridge.value);
+  const read = () => { try { return JSON.parse(localStorage.getItem(key())); } catch { return null; } };
+  const addLine = item => {
+    const row = document.createElement('div'); row.className = 'line';
+    const name = document.createElement('input'); name.placeholder = 'Ex. Jupiler'; name.value = item?.name || ''; name.setAttribute('list', 'fuseProducts');
+    const quantity = document.createElement('input'); quantity.type = 'number'; quantity.min = '0'; quantity.inputMode = 'numeric'; quantity.value = item?.quantity ?? '';
+    const nameLabel = document.createElement('label'); nameLabel.append('Boisson', name);
+    const quantityLabel = document.createElement('label'); quantityLabel.append('Qté', quantity);
+    const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = '×'; remove.addEventListener('click', () => row.remove());
+    row.append(nameLabel, quantityLabel, remove); lines.append(row);
+  };
+  function restore() {
+    const record = read(); const reference = record?.referenceLines || [];
+    card.classList.toggle('hidden', !isFridgeShelf());
+    if (!isFridgeShelf()) return;
+    if (reference.length) {
+      lines.replaceChildren(); reference.forEach(addLine);
+      const total = reference.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+      state.textContent = copy(`Référence enregistrée : ${reference.length} ligne(s), ${total} boisson(s).`, `Referentie opgeslagen: ${reference.length} regel(s), ${total} drank(en).`, `Reference saved: ${reference.length} row(s), ${total} drink(s).`);
+    } else {
+      if (!lines.children.length) addLine();
+      state.textContent = copy('Aucune référence enregistrée pour cet étage.', 'Geen referentie opgeslagen voor dit niveau.', 'No reference saved for this shelf.');
+    }
+  }
+  card.querySelector('#saveReference').addEventListener('click', () => {
+    const referenceLines = [...lines.children].map(row => {
+      const inputs = row.querySelectorAll('input'); return { name: inputs[0]?.value.trim(), quantity: Number(inputs[1]?.value || 0) };
+    }).filter(item => item.name);
+    if (!referenceLines.length) { state.textContent = copy('Ajoute au moins une boisson avant d’enregistrer.', 'Voeg minstens één drank toe voordat je opslaat.', 'Add at least one drink before saving.'); return; }
+    const current = read() || {}; const total = referenceLines.reduce((sum, item) => sum + item.quantity, 0);
+    localStorage.setItem(key(), JSON.stringify({ ...current, referenceLines, count: total, counted: true, referenceSavedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));
+    state.textContent = copy(`Référence enregistrée : ${referenceLines.length} ligne(s), ${total} boisson(s).`, `Referentie opgeslagen: ${referenceLines.length} regel(s), ${total} drank(en).`, `Reference saved: ${referenceLines.length} row(s), ${total} drink(s).`);
+    document.dispatchEvent(new Event('fuse:fridge-progress'));
+  });
+  [place, fridge, shelf].forEach(control => control.addEventListener('change', () => setTimeout(restore, 0)));
+  restore();
 })();

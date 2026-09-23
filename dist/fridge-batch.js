@@ -122,7 +122,7 @@
       const problem = status !== 'ok' || alignment === 'crooked';
       const unresolved = problem && correction !== 'corrected';
       hasIssues ||= unresolved;
-      localStorage.setItem(shelfKey(shelfNames()[index]), JSON.stringify({ count, quantity: status, alignment, correction, issue, missing, extra, hadIssue: problem, counted: true, completed: !unresolved, updatedAt: new Date().toISOString() }));
+      localStorage.setItem(shelfKey(shelfNames()[index]), JSON.stringify({ ...read(shelfKey(shelfNames()[index])), count, quantity: status, alignment, correction, issue, missing, extra, hadIssue: problem, counted: true, completed: !unresolved, updatedAt: new Date().toISOString() }));
     });
     localStorage.setItem(fridgeKey(), JSON.stringify({ completed: !hasIssues, hasIssues, inProgress: hasIssues, updatedAt: new Date().toISOString() }));
     q('#analysisNotice').textContent = hasIssues ? 'Le frigo reste orange : les étages signalés doivent être corrigés.' : 'Le décompte est validé : le frigo devient vert.';

@@ -79,7 +79,7 @@
       return;
     }
     const completed = currentComplete();
-    localStorage.setItem(shelfKey(shelf.value), JSON.stringify({ quantity: quantity.value, alignment: alignment.value, resolution: resolution.value, issue: issue.value, counted: true, completed, updatedAt: new Date().toISOString() }));
+    localStorage.setItem(shelfKey(shelf.value), JSON.stringify({ ...getShelf(shelf.value), quantity: quantity.value, alignment: alignment.value, resolution: resolution.value, issue: issue.value, counted: true, completed, updatedAt: new Date().toISOString() }));
     const allDone = fridgeDone();
     localStorage.setItem(fridgeKey(), JSON.stringify({ completed: allDone, updatedAt: new Date().toISOString() }));
     document.dispatchEvent(new Event('fuse:fridge-finished'));
