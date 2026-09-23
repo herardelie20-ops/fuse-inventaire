@@ -194,3 +194,58 @@ fetch('language.js?v=4').then(response => {
 }).then(source => {
   const script = document.createElement('script'); script.textContent = source; document.body.append(script);
 }).catch(() => {});
+
+// Espace de travail compact : le comptage photo reste disponible, sans encombrer le plan.
+(() => {
+  const app = document.querySelector('.app');
+  const selectorCard = document.querySelector('#bar')?.closest('.card');
+  const plan = document.querySelector('#barPlan');
+  const photoCard = document.querySelector('#preview')?.closest('.card');
+  const linesCard = document.querySelector('#lines')?.closest('.card');
+  const batch = document.querySelector('.fridge-batch');
+  const checklistCard = document.querySelector('#stateSummary')?.closest('.card');
+  const save = document.querySelector('#save');
+  const locationPanel = document.querySelector('#placeStatus')?.closest('.card');
+  const detailed = document.querySelector('.detailed-report-panel');
+  const complete = document.querySelector('.comprehensive-report-panel');
+  const preview = document.querySelector('.report-preview');
+  const share = document.querySelector('.report-share');
+  if (!app || !selectorCard || !photoCard || !linesCard || !save) return;
+
+  const style = document.createElement('style');
+  style.textContent = `.counting-launch{width:100%;margin:12px 0 0}.counting-modal{position:fixed;inset:0;z-index:80;background:#000d;display:grid;align-items:end}.counting-sheet{width:min(680px,100%);max-height:92vh;overflow:auto;background:#0a0a0a;border:1px solid #5a5a5a;border-radius:18px 18px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -18px 60px #000}.counting-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px}.counting-sheet-head h2{font-size:1.35rem;margin:2px 0}.counting-sheet-head p{margin:0;color:#cfcfcf;font-size:.82rem}.counting-sheet-close{min-width:40px;padding:9px;background:#242424;color:#fff}.counting-sheet .card{margin:12px 0}.counting-sheet>#save{width:100%;margin:14px 0}.plan-status{margin:9px 0 0!important;padding:0!important;border:0!important;background:transparent!important}.plan-status b{font-size:.76rem}.plan-status .small{font-size:.72rem;margin:3px 0 0}.plan-status button{display:none!important}.report-hub{margin-top:14px}.report-hub>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.report-hub h2{font-size:1.05rem;margin:0}.report-hub>header p{margin:0;color:#cfcfcf;font-size:.76rem}.report-hub .report-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.report-hub .report-action-grid button{width:100%}.report-hub .report-section{margin:12px 0 0;padding-top:12px;border-top:1px solid #393939}.report-hub .report-section>p{margin:5px 0 9px}.report-hub .report-share label{margin:8px 0}.report-hub .report-preview,.report-hub .report-share,.report-hub .detailed-report-panel,.report-hub .comprehensive-report-panel{background:transparent;border:0;border-radius:0;padding:0}.report-hub .comprehensive-report-panel,.report-hub .detailed-report-panel{display:contents}.report-hub .detailed-report-panel>b,.report-hub .detailed-report-panel>p,.report-hub .comprehensive-report-panel>b,.report-hub .comprehensive-report-panel>p{display:none}@media(min-width:560px){.counting-modal{align-items:center;justify-content:center;padding:24px}.counting-sheet{border-radius:18px;max-height:86vh}.report-hub .report-action-grid{grid-template-columns:repeat(4,1fr)}}`;
+  document.head.append(style);
+
+  const launcher = document.createElement('button');
+  launcher.className = 'primary counting-launch'; launcher.type = 'button';
+  launcher.textContent = 'Ouvrir le comptage IA et les photos';
+  (plan || selectorCard).after(launcher);
+
+  const modal = document.createElement('section');
+  modal.className = 'counting-modal hidden'; modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
+  modal.innerHTML = `<div class="counting-sheet"><header class="counting-sheet-head"><div><h2>Comptage IA</h2><p id="countingContext"></p></div><button class="counting-sheet-close" type="button" aria-label="Fermer">×</button></header><div id="countingWorkspace"></div></div>`;
+  document.body.append(modal);
+  const workspace = modal.querySelector('#countingWorkspace');
+  [photoCard, batch, linesCard, checklistCard, save].filter(Boolean).forEach(element => workspace.append(element));
+  const context = modal.querySelector('#countingContext');
+  const open = () => { context.textContent = `${document.querySelector('#bar')?.value || ''} · ${document.querySelector('#fridge')?.value || ''}`; modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; modal.querySelector('#camera, #nextFridgePhoto')?.focus(); };
+  const close = () => { modal.classList.add('hidden'); document.body.style.overflow = ''; launcher.focus(); };
+  launcher.addEventListener('click', open); modal.querySelector('.counting-sheet-close').addEventListener('click', close);
+  modal.addEventListener('click', event => { if (event.target === modal) close(); });
+  window.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
+
+  if (locationPanel && plan) { locationPanel.classList.remove('card'); locationPanel.classList.add('plan-status'); plan.append(locationPanel); }
+
+  if (detailed || complete || preview || share) {
+    const hub = document.createElement('section'); hub.className = 'card report-hub';
+    hub.innerHTML = `<header><h2>Rapports</h2><p>Prépare, vérifie et envoie depuis le même espace.</p></header><div class="report-action-grid" id="reportActions"></div><div class="report-section hidden" id="reportPreviewSlot"></div><div class="report-section hidden" id="reportShareSlot"></div>`;
+    (plan || selectorCard).after(hub);
+    hub.before(launcher);
+    const actions = hub.querySelector('#reportActions');
+    const addAction = (label, handler) => { const button = document.createElement('button'); button.type = 'button'; button.className = 'secondary'; button.textContent = label; button.addEventListener('click', handler); actions.append(button); };
+    if (detailed) { detailed.classList.remove('card'); detailed.hidden = true; hub.append(detailed); addAction('Rapport du bar', () => detailed.querySelector('#detailedReport')?.click()); }
+    if (complete) { complete.classList.remove('card'); complete.hidden = true; hub.append(complete); addAction('Rapport complet', () => complete.querySelector('#comprehensiveReport')?.click()); }
+    if (preview) { preview.classList.remove('card'); hub.querySelector('#reportPreviewSlot').append(preview); addAction('Aperçu', () => { hub.querySelector('#reportPreviewSlot').classList.remove('hidden'); preview.querySelector('#previewReport')?.click(); }); }
+    if (share) { share.classList.remove('card'); hub.querySelector('#reportShareSlot').append(share); addAction('Envoyer', () => { hub.querySelector('#reportShareSlot').classList.remove('hidden'); share.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }); }
+  }
+})();

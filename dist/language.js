@@ -75,6 +75,12 @@
       'Stock principal et réserve vidange': 'Main stock and empty-container reserve', 'Machine à glaçons': 'Ice machine', 'Réserve alcool': 'Alcohol reserve', 'Stock escalier - 1er étage': 'Staircase stock — first floor', 'Stock étage Cosmos - sous l’escalier': 'Cosmos floor stock — under the stairs', 'Liste de boissons à compléter': 'Drinks list to complete', 'Liste boissons escalier à compléter': 'Staircase drinks list to complete', 'Liste boissons Motion à compléter': 'Motion drinks list to complete', 'Liste boissons étage Cosmos à compléter': 'Cosmos floor drinks list to complete'
     }
   };
+  Object.assign(translations.nl, {
+    'Ouvrir le comptage IA et les photos': 'AI-telling en foto’s openen', 'Comptage IA': 'AI-telling', 'Fermer': 'Sluiten', 'Rapports': 'Rapporten', 'Prépare, vérifie et envoie depuis le même espace.': 'Maak, controleer en verstuur vanuit dezelfde ruimte.', 'Rapport du bar': 'Barrapport', 'Rapport complet': 'Volledig rapport', 'Aperçu': 'Voorbeeld', 'Envoyer': 'Versturen'
+  });
+  Object.assign(translations.en, {
+    'Ouvrir le comptage IA et les photos': 'Open AI counting and photos', 'Comptage IA': 'AI counting', 'Fermer': 'Close', 'Rapports': 'Reports', 'Prépare, vérifie et envoie depuis le même espace.': 'Prepare, review and send from one place.', 'Rapport du bar': 'Bar report', 'Rapport complet': 'Full report', 'Aperçu': 'Preview', 'Envoyer': 'Send'
+  });
   const originals = new WeakMap(); const attributes = ['placeholder', 'title', 'aria-label'];
   const locale = () => localStorage.getItem('fuse-language') || 'fr';
   function translate(value, language) {
