@@ -10,7 +10,7 @@
   app.querySelector('h1')?.after(info);
 
   const offlineStyle = document.createElement('style');
-  offlineStyle.textContent = '.offline-note{margin:4px 0 14px;color:#aeb8b5;font-size:.72rem;line-height:1.35}';
+  offlineStyle.textContent = '.offline-note{margin:4px 0 14px;color:#aeb8b5;font-size:.72rem;line-height:1.35}.profile-demence .offline-note{color:#ff72b3}';
   document.head.append(offlineStyle);
 
   const preview = document.createElement('section');
