@@ -8,7 +8,7 @@
   const individualChecklistCard = document.querySelector('#stateSummary')?.closest('.card');
   if (!place || !fridge || !shelf || !save) return;
   const manualStyle = document.createElement('style');
-  manualStyle.textContent = '.manual-shelf-editor{margin:16px 0;padding:14px;border:1px solid #555;border-radius:14px;background:#0a0a0a}.manual-shelf{margin:10px 0;border:1px solid #4d4d4d;border-radius:10px;overflow:hidden}.manual-shelf summary{display:flex;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;font-weight:800}.manual-shelf summary small{color:#cfcfcf;font-weight:500;text-align:right}.manual-shelf-body{padding:0 12px 12px;border-top:1px solid #444}.manual-quick{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.manual-quick label{margin:10px 0}.manual-quick button{margin:10px 0;padding:11px}.manual-catalogue{max-height:220px;overflow:auto;border:1px solid #555;border-radius:8px;padding:8px;margin:8px 0}.manual-category{margin:7px 0}.manual-category>b{display:block;font-size:.78rem;color:#cfcfcf;margin-bottom:5px}.manual-category>div{display:flex;flex-wrap:wrap;gap:6px}.manual-product{padding:6px 8px;border-radius:999px;background:#242424;color:#fff;font-size:.78rem}.manual-drink-lines{display:grid;gap:8px;margin:10px 0}.manual-drink-line{display:grid;grid-template-columns:1fr 76px 34px;gap:8px}.manual-drink-line input{min-width:0}.manual-remove{background:#333;color:#fff;padding:8px}.manual-add-line{width:100%;margin:2px 0 8px}.manual-save-shelf{width:100%}.manual-save-note{margin:8px 0 0;min-height:1.2em}@media(max-width:460px){.manual-quick{grid-template-columns:1fr 1fr}.manual-quick button{grid-column:1/-1}}';
+  manualStyle.textContent = '.manual-shelf-editor{margin:16px 0;padding:14px;border:1px solid #555;border-radius:14px;background:#0a0a0a}.manual-shelf{margin:10px 0;border:1px solid #4d4d4d;border-radius:10px;overflow:hidden}.manual-shelf summary{display:flex;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;font-weight:800}.manual-shelf summary small{color:#cfcfcf;font-weight:500;text-align:right}.manual-shelf-body{padding:0 12px 12px;border-top:1px solid #444}.manual-quick{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.manual-quick label{margin:10px 0}.manual-quick button{margin:10px 0;padding:11px}.bottle-rail{display:flex;gap:9px;overflow-x:auto;padding:12px 3px 8px;border-bottom:1px solid #444}.manual-bottle{position:relative;flex:0 0 29px;height:53px;padding:0;border:2px solid #fff;border-radius:7px 7px 10px 10px;background:transparent;color:transparent}.manual-bottle:before{content:"";position:absolute;left:8px;top:-11px;width:9px;height:12px;border:2px solid #fff;border-bottom:0;border-radius:3px 3px 0 0}.manual-bottle.selected{outline:3px solid #00b8d9;outline-offset:3px}.manual-bottle.filled{background:#fff}.manual-bottle-label{display:block;font-size:.72rem;color:#cfcfcf;min-height:1.3em;margin:7px 0}.manual-catalogue{max-height:220px;overflow:auto;border:1px solid #555;border-radius:8px;padding:8px;margin:8px 0}.manual-category{margin:7px 0}.manual-category>b{display:block;font-size:.78rem;color:#cfcfcf;margin-bottom:5px}.manual-category>div{display:flex;flex-wrap:wrap;gap:6px}.manual-product{padding:6px 8px;border-radius:999px;background:#242424;color:#fff;font-size:.78rem}.manual-drink-lines{display:none}.manual-add-line{display:none}.manual-save-shelf{width:100%}.manual-save-note{margin:8px 0 0;min-height:1.2em}@media(max-width:460px){.manual-quick{grid-template-columns:1fr 1fr}.manual-quick button{grid-column:1/-1}}';
   document.head.append(manualStyle);
 
   const panel = document.createElement('section');
@@ -46,6 +46,7 @@
     ['Soft drinks', window.FUSE_SOFTS || []], ['Bières', window.FUSE_BEERS || []], ['Vins et spéciaux', window.FUSE_FRIDGE_SPECIALS || []], ['Spiritueux', window.FUSE_SPIRITS || []], ['Sirops', window.FUSE_SYRUPS || []]
   ].map(([category, products]) => [category, [...products].sort((a, b) => a.localeCompare(b, 'fr'))]);
   const lineMarkup = (item = {}) => `<div class="manual-drink-line"><input class="manual-drink-name" value="${String(item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" placeholder="Boisson"><input class="manual-drink-quantity" type="number" min="0" inputmode="numeric" value="${item.quantity ?? ''}" placeholder="0"><button type="button" class="manual-remove" aria-label="Supprimer">×</button></div>`;
+  const bottleMarkup = (item, index) => `<button type="button" class="manual-bottle ${item?.name ? 'filled' : ''} ${index === 0 ? 'selected' : ''}" data-bottle-index="${index}" title="${item?.name || `Ligne ${index + 1}`}">${index + 1}</button>`;
   function renderManualShelves() {
     const list = q('#manualShelfList');
     if (!list) return;
@@ -55,7 +56,8 @@
       const total = entries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
       const defaultQuantity = entries[0]?.quantity ?? '';
       const groups = catalogue().map(([category, products]) => `<section class="manual-category"><b>${category}</b><div>${products.map(product => `<button type="button" class="manual-product" data-product="${product}">${product}</button>`).join('')}</div></section>`).join('');
-      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><div class="manual-quick"><label>Nombre de lignes<input class="manual-line-count" type="number" min="1" inputmode="numeric" value="${entries.length || 1}"></label><label>Boissons par ligne<input class="manual-default-quantity" type="number" min="0" inputmode="numeric" value="${defaultQuantity}"></label><button type="button" class="secondary manual-generate">Appliquer</button></div><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${entries.length ? entries.map(lineMarkup).join('') : lineMarkup()}</div><button type="button" class="secondary manual-add-line">+ Ligne de boisson</button><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
+      const current = entries.length ? entries : [{}];
+      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><div class="manual-quick"><label>Nombre de lignes<input class="manual-line-count" type="number" min="1" inputmode="numeric" value="${current.length}"></label><label>Boissons par ligne<input class="manual-default-quantity" type="number" min="0" inputmode="numeric" value="${defaultQuantity}"></label><button type="button" class="secondary manual-generate">Appliquer</button></div><div class="bottle-rail">${current.map(bottleMarkup).join('')}</div><span class="manual-bottle-label">Ligne 1 : choisis une boisson</span><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${current.map(lineMarkup).join('')}</div><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
     }).join('');
   }
 
@@ -175,14 +177,31 @@
     const floor = event.target.closest('.manual-shelf');
     if (!floor) return;
     const lines = floor.querySelector('.manual-drink-lines');
+    if (event.target.closest('.manual-bottle')) {
+      const index = Number(event.target.closest('.manual-bottle').dataset.bottleIndex);
+      floor.dataset.selectedBottle = index;
+      floor.querySelectorAll('.manual-bottle').forEach(button => button.classList.toggle('selected', Number(button.dataset.bottleIndex) === index));
+      const chosen = lines.children[index]?.querySelector('.manual-drink-name')?.value;
+      floor.querySelector('.manual-bottle-label').textContent = chosen ? `Ligne ${index + 1} : ${chosen}` : `Ligne ${index + 1} : choisis une boisson`;
+      return;
+    }
     if (event.target.closest('.manual-product')) {
-      lines.insertAdjacentHTML('beforeend', lineMarkup({ name: event.target.closest('.manual-product').dataset.product }));
+      const index = Number(floor.dataset.selectedBottle || 0);
+      const row = lines.children[index];
+      if (row) row.querySelector('.manual-drink-name').value = event.target.closest('.manual-product').dataset.product;
+      const bottle = floor.querySelector(`.manual-bottle[data-bottle-index="${index}"]`);
+      if (bottle) { bottle.classList.add('filled'); bottle.title = row?.querySelector('.manual-drink-name').value || ''; }
+      floor.querySelector('.manual-bottle-label').textContent = `Ligne ${index + 1} : ${row?.querySelector('.manual-drink-name').value || ''}`;
     }
     if (event.target.closest('.manual-generate')) {
       const count = Math.max(1, Number(floor.querySelector('.manual-line-count').value || 1));
       const quantity = floor.querySelector('.manual-default-quantity').value;
       const current = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value, quantity: row.querySelector('.manual-drink-quantity').value }));
       lines.innerHTML = Array.from({ length: count }, (_, index) => lineMarkup({ ...current[index], quantity: current[index]?.quantity ?? quantity })).join('');
+      const updated = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value }));
+      floor.querySelector('.bottle-rail').innerHTML = updated.map(bottleMarkup).join('');
+      floor.dataset.selectedBottle = 0;
+      floor.querySelector('.manual-bottle-label').textContent = updated[0]?.name ? `Ligne 1 : ${updated[0].name}` : 'Ligne 1 : choisis une boisson';
     }
     if (event.target.closest('.manual-add-line')) lines.insertAdjacentHTML('beforeend', lineMarkup());
     if (event.target.closest('.manual-remove')) event.target.closest('.manual-drink-line').remove();
