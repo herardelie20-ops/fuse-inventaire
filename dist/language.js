@@ -76,10 +76,10 @@
     }
   };
   Object.assign(translations.nl, {
-    'Ouvrir le comptage IA et les photos': 'AI-telling en foto’s openen', 'Comptage IA': 'AI-telling', 'Fermer': 'Sluiten', 'Rapports': 'Rapporten', 'Prépare, vérifie et envoie depuis le même espace.': 'Maak, controleer en verstuur vanuit dezelfde ruimte.', 'Rapport du bar': 'Barrapport', 'Rapport complet': 'Volledig rapport', 'Aperçu': 'Voorbeeld', 'Envoyer': 'Versturen', 'Mode autonome · Les données et photos restent sur cet appareil.': 'Autonome modus · Gegevens en foto’s blijven op dit apparaat.'
+    'Ouvrir le comptage IA et les photos': 'AI-telling en foto’s openen', 'Comptage': 'Telling', 'Comptage IA': 'AI-telling', 'Saisie manuelle': 'Handmatige invoer', 'Fermer': 'Sluiten', 'Rapports': 'Rapporten', 'Prépare, vérifie et envoie depuis le même espace.': 'Maak, controleer en verstuur vanuit dezelfde ruimte.', 'Rapport du bar': 'Barrapport', 'Rapport complet': 'Volledig rapport', 'Aperçu': 'Voorbeeld', 'Envoyer': 'Versturen', 'Mode autonome · Les données et photos restent sur cet appareil.': 'Autonome modus · Gegevens en foto’s blijven op dit apparaat.'
   });
   Object.assign(translations.en, {
-    'Ouvrir le comptage IA et les photos': 'Open AI counting and photos', 'Comptage IA': 'AI counting', 'Fermer': 'Close', 'Rapports': 'Reports', 'Prépare, vérifie et envoie depuis le même espace.': 'Prepare, review and send from one place.', 'Rapport du bar': 'Bar report', 'Rapport complet': 'Full report', 'Aperçu': 'Preview', 'Envoyer': 'Send', 'Mode autonome · Les données et photos restent sur cet appareil.': 'Offline mode · Data and photos stay on this device.'
+    'Ouvrir le comptage IA et les photos': 'Open AI counting and photos', 'Comptage': 'Counting', 'Comptage IA': 'AI counting', 'Saisie manuelle': 'Manual entry', 'Fermer': 'Close', 'Rapports': 'Reports', 'Prépare, vérifie et envoie depuis le même espace.': 'Prepare, review and send from one place.', 'Rapport du bar': 'Bar report', 'Rapport complet': 'Full report', 'Aperçu': 'Preview', 'Envoyer': 'Send', 'Mode autonome · Les données et photos restent sur cet appareil.': 'Offline mode · Data and photos stay on this device.'
   });
   const originals = new WeakMap(); const attributes = ['placeholder', 'title', 'aria-label'];
   const locale = () => localStorage.getItem('fuse-language') || 'fr';
