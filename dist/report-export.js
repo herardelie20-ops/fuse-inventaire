@@ -1,4 +1,6 @@
 (() => {
+  document.title = 'FUSE Inventory';
+  document.querySelectorAll('.brand').forEach(element => { element.textContent = 'FUSE INVENTORY'; });
   const report = document.querySelector('#report');
   const originalPdfButton = document.querySelector('#print');
   if (!report || !originalPdfButton) return;
@@ -23,7 +25,7 @@
   const reportRows = () => [...document.querySelectorAll('#rRows tr')].map(row => [...row.querySelectorAll('td')].map(cell => cell.textContent.trim()));
   const reportTitle = () => document.querySelector('#rTitle')?.textContent.trim() || 'Rapport inventaire Fuse';
   const safeName = () => `${reportTitle().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'rapport-inventaire'}`;
-  const reportText = () => ['FUSE - INVENTAIRE FRIGO', reportTitle(), document.querySelector('#rMeta')?.textContent.trim() || '', '', ...reportRows().map(([label, value = '']) => value ? `${label} : ${value}` : label)].join('\r\n');
+  const reportText = () => ['FUSE INVENTORY', reportTitle(), document.querySelector('#rMeta')?.textContent.trim() || '', '', ...reportRows().map(([label, value = '']) => value ? `${label} : ${value}` : label)].join('\r\n');
   function download(contents, name, type) {
     const blob = new Blob([contents], { type });
     const link = document.createElement('a');
@@ -93,10 +95,10 @@
     const text = (value, x, yy, size = 10, bold = false, color = '0.10 0.15 0.16') => stream.push(`${color} rg BT /${bold ? 'F2' : 'F1'} ${size} Tf 1 0 0 1 ${x} ${yy} Tm (${pdfString(value)}) Tj ET`);
     const line = (x1, yy, x2) => stream.push(`0.82 0.86 0.86 RG 0.5 w ${x1} ${yy} m ${x2} ${yy} l S`);
     const finish = () => { pages.push(stream.join('\n')); stream = []; };
-    const footer = () => text(`FUSE · inventaire local — page ${pages.length + 1}`, 42, 25, 8, false, '0.28 0.35 0.38');
+    const footer = () => text(`FUSE Inventory — page ${pages.length + 1}`, 42, 25, 8, false, '0.28 0.35 0.38');
     const start = continuation => {
       if (stream.length) finish(); y = 792;
-      text('FUSE · INVENTAIRE LOCAL', 42, y, 9, true); y -= 27;
+      text('FUSE INVENTORY', 42, y, 9, true); y -= 27;
       text(continuation ? `${reportTitle()} — suite` : reportTitle(), 42, y, 20, true); y -= 21;
       text(document.querySelector('#rMeta')?.textContent.trim() || `Inventaire du ${new Date().toLocaleString('fr-BE')}`, 42, y, 9, false, '0.28 0.35 0.38'); y -= 20;
       line(42, y, 553); y -= 17;
@@ -125,10 +127,10 @@
       const maxWidth = 511; const maxHeight = 665; const ratio = Math.min(maxWidth / plan.width, maxHeight / plan.height);
       const width = plan.width * ratio; const height = plan.height * ratio; const x = (595 - width) / 2; const imageY = 64;
       const planStream = [
-        '0.10 0.15 0.16 rg BT /F2 9 Tf 1 0 0 1 42 792 Tm (FUSE · INVENTAIRE LOCAL) Tj ET',
+        '0.10 0.15 0.16 rg BT /F2 9 Tf 1 0 0 1 42 792 Tm (FUSE INVENTORY) Tj ET',
         `0.10 0.15 0.16 rg BT /F2 20 Tf 1 0 0 1 42 758 Tm (${pdfString(`Plan — ${plan.name}`)}) Tj ET`,
         `q ${width.toFixed(2)} 0 0 ${height.toFixed(2)} ${x.toFixed(2)} ${imageY.toFixed(2)} cm /Im${validPlans.indexOf(plan) + 1} Do Q`,
-        `0.28 0.35 0.38 rg BT /F1 8 Tf 1 0 0 1 42 25 Tm (FUSE · inventaire local — plan du bar) Tj ET`
+        `0.28 0.35 0.38 rg BT /F1 8 Tf 1 0 0 1 42 25 Tm (FUSE Inventory — bar plan) Tj ET`
       ].join('\n');
       pages.push({ content: planStream, plan });
     });
