@@ -8,7 +8,7 @@
   const individualChecklistCard = document.querySelector('#stateSummary')?.closest('.card');
   if (!place || !fridge || !shelf || !save) return;
   const manualStyle = document.createElement('style');
-  manualStyle.textContent = '.manual-shelf-editor{margin-top:16px;padding-top:14px;border-top:1px solid #444}.manual-shelf{margin:10px 0;border:1px solid #4d4d4d;border-radius:10px;overflow:hidden}.manual-shelf summary{display:flex;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;font-weight:800}.manual-shelf summary small{color:#cfcfcf;font-weight:500;text-align:right}.manual-shelf-body{padding:0 12px 12px;border-top:1px solid #444}.manual-catalogue{max-height:220px;overflow:auto;border:1px solid #555;border-radius:8px;padding:8px;margin:8px 0}.manual-category{margin:7px 0}.manual-category>b{display:block;font-size:.78rem;color:#cfcfcf;margin-bottom:5px}.manual-category>div{display:flex;flex-wrap:wrap;gap:6px}.manual-product{padding:6px 8px;border-radius:999px;background:#242424;color:#fff;font-size:.78rem}.manual-drink-lines{display:grid;gap:8px;margin:10px 0}.manual-drink-line{display:grid;grid-template-columns:1fr 76px 34px;gap:8px}.manual-drink-line input{min-width:0}.manual-remove{background:#333;color:#fff;padding:8px}.manual-add-line{width:100%;margin:2px 0 8px}.manual-save-shelf{width:100%}.manual-save-note{margin:8px 0 0;min-height:1.2em}';
+  manualStyle.textContent = '.manual-shelf-editor{margin:16px 0;padding:14px;border:1px solid #555;border-radius:14px;background:#0a0a0a}.manual-shelf{margin:10px 0;border:1px solid #4d4d4d;border-radius:10px;overflow:hidden}.manual-shelf summary{display:flex;justify-content:space-between;gap:10px;padding:12px;cursor:pointer;font-weight:800}.manual-shelf summary small{color:#cfcfcf;font-weight:500;text-align:right}.manual-shelf-body{padding:0 12px 12px;border-top:1px solid #444}.manual-quick{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.manual-quick label{margin:10px 0}.manual-quick button{margin:10px 0;padding:11px}.manual-catalogue{max-height:220px;overflow:auto;border:1px solid #555;border-radius:8px;padding:8px;margin:8px 0}.manual-category{margin:7px 0}.manual-category>b{display:block;font-size:.78rem;color:#cfcfcf;margin-bottom:5px}.manual-category>div{display:flex;flex-wrap:wrap;gap:6px}.manual-product{padding:6px 8px;border-radius:999px;background:#242424;color:#fff;font-size:.78rem}.manual-drink-lines{display:grid;gap:8px;margin:10px 0}.manual-drink-line{display:grid;grid-template-columns:1fr 76px 34px;gap:8px}.manual-drink-line input{min-width:0}.manual-remove{background:#333;color:#fff;padding:8px}.manual-add-line{width:100%;margin:2px 0 8px}.manual-save-shelf{width:100%}.manual-save-note{margin:8px 0 0;min-height:1.2em}@media(max-width:460px){.manual-quick{grid-template-columns:1fr 1fr}.manual-quick button{grid-column:1/-1}}';
   document.head.append(manualStyle);
 
   const panel = document.createElement('section');
@@ -31,7 +31,7 @@
     <p id="fridgeState" class="status-code orange">● À photographier et contrôler.</p>`;
   individualPhotoCard.before(panel);
 
-  const q = id => panel.querySelector(id);
+  const q = id => panel.querySelector(id) || document.querySelector(id);
   const isBar = () => place.value.startsWith('Bar ');
   const isBahut = () => /^Bahut\b/i.test(fridge.value);
   const fridgeKey = () => `fuse-check-${place.value}-${fridge.value}`;
@@ -53,8 +53,9 @@
       const record = read(shelfKey(name)) || {};
       const entries = record.referenceLines || [];
       const total = entries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+      const defaultQuantity = entries[0]?.quantity ?? '';
       const groups = catalogue().map(([category, products]) => `<section class="manual-category"><b>${category}</b><div>${products.map(product => `<button type="button" class="manual-product" data-product="${product}">${product}</button>`).join('')}</div></section>`).join('');
-      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${entries.length ? entries.map(lineMarkup).join('') : lineMarkup()}</div><button type="button" class="secondary manual-add-line">+ Ligne de boisson</button><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
+      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><div class="manual-quick"><label>Nombre de lignes<input class="manual-line-count" type="number" min="1" inputmode="numeric" value="${entries.length || 1}"></label><label>Boissons par ligne<input class="manual-default-quantity" type="number" min="0" inputmode="numeric" value="${defaultQuantity}"></label><button type="button" class="secondary manual-generate">Appliquer</button></div><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${entries.length ? entries.map(lineMarkup).join('') : lineMarkup()}</div><button type="button" class="secondary manual-add-line">+ Ligne de boisson</button><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
     }).join('');
   }
 
@@ -176,6 +177,12 @@
     const lines = floor.querySelector('.manual-drink-lines');
     if (event.target.closest('.manual-product')) {
       lines.insertAdjacentHTML('beforeend', lineMarkup({ name: event.target.closest('.manual-product').dataset.product }));
+    }
+    if (event.target.closest('.manual-generate')) {
+      const count = Math.max(1, Number(floor.querySelector('.manual-line-count').value || 1));
+      const quantity = floor.querySelector('.manual-default-quantity').value;
+      const current = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value, quantity: row.querySelector('.manual-drink-quantity').value }));
+      lines.innerHTML = Array.from({ length: count }, (_, index) => lineMarkup({ ...current[index], quantity: current[index]?.quantity ?? quantity })).join('');
     }
     if (event.target.closest('.manual-add-line')) lines.insertAdjacentHTML('beforeend', lineMarkup());
     if (event.target.closest('.manual-remove')) event.target.closest('.manual-drink-line').remove();
