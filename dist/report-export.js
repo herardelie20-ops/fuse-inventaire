@@ -215,6 +215,9 @@ fetch('language.js?v=4').then(response => {
   const style = document.createElement('style');
   style.textContent = `.counting-launch{width:100%;margin:12px 0 0}.counting-modal{position:fixed;inset:0;z-index:80;background:#000d;display:grid;align-items:end}.counting-sheet{width:min(680px,100%);max-height:92vh;overflow:auto;background:#0a0a0a;border:1px solid #5a5a5a;border-radius:18px 18px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -18px 60px #000}.counting-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px}.counting-sheet-head h2{font-size:1.35rem;margin:2px 0}.counting-sheet-head p{margin:0;color:#cfcfcf;font-size:.82rem}.counting-sheet-close{min-width:40px;padding:9px;background:#242424;color:#fff}.counting-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:14px 0}.counting-tabs button{padding:10px 8px;background:#202020;color:#fff}.counting-tabs button.active{background:#fff;color:#000}.counting-tab-panel .card{margin:12px 0}.counting-tab-panel>#save{width:100%;margin:14px 0}.plan-status{margin:9px 0 0!important;padding:0!important;border:0!important;background:transparent!important}.plan-status b{font-size:.76rem}.plan-status .small{font-size:.72rem;margin:3px 0 0}.plan-status button{display:none!important}.report-hub{margin-top:14px}.report-hub>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}.report-hub h2{font-size:1.05rem;margin:0}.report-hub>header p{margin:0;color:#cfcfcf;font-size:.76rem}.report-hub .report-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.report-hub .report-action-grid button{width:100%}.report-hub .report-section{margin:12px 0 0;padding-top:12px;border-top:1px solid #393939}.report-hub .report-section>p{margin:5px 0 9px}.report-hub .report-share label{margin:8px 0}.report-hub .report-preview,.report-hub .report-share,.report-hub .detailed-report-panel,.report-hub .comprehensive-report-panel{background:transparent;border:0;border-radius:0;padding:0}.report-hub .comprehensive-report-panel,.report-hub .detailed-report-panel{display:contents}.report-hub .detailed-report-panel>b,.report-hub .detailed-report-panel>p,.report-hub .comprehensive-report-panel>b,.report-hub .comprehensive-report-panel>p{display:none}@media(min-width:560px){.counting-modal{align-items:center;justify-content:center;padding:24px}.counting-sheet{border-radius:18px;max-height:86vh}.report-hub .report-action-grid{grid-template-columns:repeat(4,1fr)}}`;
   document.head.append(style);
+  const planInfoStyle = document.createElement('style');
+  planInfoStyle.textContent = '.plan-info{display:flex;flex-wrap:wrap;gap:7px 12px;align-items:center;margin:9px 0 0;color:#aeb8b5;font-size:.72rem;line-height:1.35}.plan-info #barPlanNote{margin:0}.plan-state{font-weight:850}.plan-state.white{color:#fff}.plan-state.orange{color:#ffad52}.plan-state.red{color:#ff6b6b}.plan-state.green{color:#62dd87}.plan-info .plan-status{margin:0!important;display:flex;gap:5px;align-items:baseline}.plan-info .plan-status b{display:none}.plan-info .plan-status .small{margin:0;font-size:.72rem}';
+  document.head.append(planInfoStyle);
 
   const launcher = document.createElement('button');
   launcher.className = 'primary counting-launch'; launcher.type = 'button';
@@ -238,7 +241,14 @@ fetch('language.js?v=4').then(response => {
   modal.addEventListener('click', event => { if (event.target === modal) close(); });
   window.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
 
-  if (locationPanel && plan) { locationPanel.classList.remove('card'); locationPanel.classList.add('plan-status'); plan.append(locationPanel); }
+  if (plan) {
+    const planNote = plan.querySelector('#barPlanNote');
+    const planCanvas = plan.querySelector('#barPlanCanvas');
+    const planInfo = document.createElement('div'); planInfo.className = 'plan-info';
+    if (planCanvas) planCanvas.after(planInfo);
+    if (planNote) planInfo.append(planNote);
+    if (locationPanel) { locationPanel.classList.remove('card'); locationPanel.classList.add('plan-status'); planInfo.append(locationPanel); }
+  }
 
   if (detailed || complete || preview || share) {
     const hub = document.createElement('section'); hub.className = 'card report-hub';

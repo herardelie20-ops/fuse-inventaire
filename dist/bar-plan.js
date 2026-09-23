@@ -92,7 +92,7 @@
       image.src = language === 'nl' ? planImage.replace('.png', '-nl.png') : planImage;
       image.hidden = false;
       if (place.value.startsWith('Bar ')) {
-        note.textContent = 'Repères de suivi : blanc à faire, orange en cours, rouge avec erreur, vert validé.';
+        note.innerHTML = 'Repères : <span class="plan-state white">blanc</span> à faire · <span class="plan-state orange">orange</span> en cours · <span class="plan-state red">rouge</span> avec erreur · <span class="plan-state green">vert</span> validé.';
         renderMarkers();
         renderMasks();
       } else {
