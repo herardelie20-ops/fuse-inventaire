@@ -35,7 +35,7 @@
     const entries = dataForBar().filter(item => item.hadIssue);
     const missing = entries.reduce((total, item) => total + Number(item.missing || 0), 0);
     const extra = entries.reduce((total, item) => total + Number(item.extra || 0), 0);
-    const crooked = entries.filter(item => item.alignment === 'crooked').length;
+    const crooked = entries.filter(item => item.analysisSource === 'ai' && item.alignment === 'crooked').length;
     hint.textContent = entries.length ? `${entries.length} erreur${entries.length > 1 ? 's' : ''} relevée${entries.length > 1 ? 's' : ''} · ${missing} manquante${missing > 1 ? 's' : ''} · ${extra} en trop · ${crooked} ligne${crooked > 1 ? 's' : ''} de travers.` : 'Aucun écart enregistré pour le moment.';
   }
   button.addEventListener('click', () => {
@@ -43,13 +43,16 @@
     const errors = entries.filter(item => item.hadIssue);
     const missing = errors.reduce((total, item) => total + Number(item.missing || 0), 0);
     const extra = errors.reduce((total, item) => total + Number(item.extra || 0), 0);
-    const crooked = errors.filter(item => item.alignment === 'crooked').length;
-    const corrected = errors.filter(item => item.correction === 'corrected').length;
+    const aiErrors = errors.filter(item => item.analysisSource === 'ai');
+    const crooked = aiErrors.filter(item => item.alignment === 'crooked').length;
+    const corrected = aiErrors.filter(item => item.correction === 'corrected').length;
     const rows = [
-      ['Erreurs relevées', String(errors.length)], ['Boissons manquantes', String(missing)], ['Boissons en trop', String(extra)], ['Lignes de travers', String(crooked)], ['Corrections effectuées', String(corrected)]
+      ['Erreurs relevées', String(errors.length)], ['Boissons manquantes', String(missing)], ['Boissons en trop', String(extra)]
     ];
+    if (aiErrors.length) rows.push(['Lignes de travers', String(crooked)], ['Corrections effectuées', String(corrected)]);
     errors.forEach(item => {
-      const details = [item.quantity !== 'ok' ? `${item.missing || 0} manquante(s), ${item.extra || 0} en trop` : '', item.alignment === 'crooked' ? 'ligne de travers' : '', item.issue, item.correction === 'corrected' ? 'corrigé' : 'à corriger'].filter(Boolean).join(' · ');
+      const ai = item.analysisSource === 'ai';
+      const details = [item.quantity !== 'ok' ? `${item.missing || 0} manquante(s), ${item.extra || 0} en trop` : '', ai && item.alignment === 'crooked' ? 'ligne de travers' : '', item.issue, ai ? item.correction === 'corrected' ? 'corrigé' : 'à corriger' : ''].filter(Boolean).join(' · ');
       rows.push([`${item.fridge} — ${item.shelf}`, details]);
     });
     document.querySelector('#rTitle').textContent = `Rapport détaillé — ${place.value}`;

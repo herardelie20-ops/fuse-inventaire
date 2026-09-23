@@ -122,7 +122,7 @@
       const problem = status !== 'ok' || alignment === 'crooked';
       const unresolved = problem && correction !== 'corrected';
       hasIssues ||= unresolved;
-      localStorage.setItem(shelfKey(shelfNames()[index]), JSON.stringify({ ...read(shelfKey(shelfNames()[index])), count, quantity: status, alignment, correction, issue, missing, extra, hadIssue: problem, counted: true, completed: !unresolved, updatedAt: new Date().toISOString() }));
+      localStorage.setItem(shelfKey(shelfNames()[index]), JSON.stringify({ ...read(shelfKey(shelfNames()[index])), count, quantity: status, alignment, correction, issue, missing, extra, hadIssue: problem, analysisSource: 'ai', counted: true, completed: !unresolved, updatedAt: new Date().toISOString() }));
     });
     localStorage.setItem(fridgeKey(), JSON.stringify({ completed: !hasIssues, hasIssues, inProgress: hasIssues, updatedAt: new Date().toISOString() }));
     q('#analysisNotice').textContent = hasIssues ? 'Le frigo reste orange : les étages signalés doivent être corrigés.' : 'Le décompte est validé : le frigo devient vert.';
@@ -131,7 +131,7 @@
   });
   q('#manualShelf').addEventListener('click', () => {
     const existing = read(shelfKey(shelf.value)) || {};
-    localStorage.setItem(shelfKey(shelf.value), JSON.stringify({ ...existing, quantity: existing.quantity || 'manual', alignment: existing.alignment || 'manual', correction: 'manual', counted: true, completed: true, manualValidated: true, updatedAt: new Date().toISOString() }));
+    localStorage.setItem(shelfKey(shelf.value), JSON.stringify({ ...existing, quantity: existing.quantity || 'manual', alignment: 'manual', hadIssue: false, analysisSource: 'manual', counted: true, completed: true, manualValidated: true, updatedAt: new Date().toISOString() }));
     const allDone = finishIfAllShelvesDone();
     q('#manualNote').textContent = allDone ? 'Étages tous validés manuellement : le frigo est vert.' : `${shelf.value} est validé manuellement. Les autres étages restent à faire.`;
     state();
@@ -139,7 +139,7 @@
   q('#manualFridge').addEventListener('click', () => {
     shelfNames().forEach(name => {
       const existing = read(shelfKey(name)) || {};
-      localStorage.setItem(shelfKey(name), JSON.stringify({ ...existing, quantity: existing.quantity || 'manual', alignment: existing.alignment || 'manual', correction: 'manual', counted: true, completed: true, manualValidated: true, updatedAt: new Date().toISOString() }));
+      localStorage.setItem(shelfKey(name), JSON.stringify({ ...existing, quantity: existing.quantity || 'manual', alignment: 'manual', hadIssue: false, analysisSource: 'manual', counted: true, completed: true, manualValidated: true, updatedAt: new Date().toISOString() }));
     });
     localStorage.setItem(fridgeKey(), JSON.stringify({ completed: true, inProgress: false, manualValidated: true, updatedAt: new Date().toISOString() }));
     q('#manualNote').textContent = 'Frigo validé manuellement en vert.';
