@@ -3,10 +3,15 @@
   const report = document.querySelector('#report');
   if (!app || !report) return;
 
-  const info = document.createElement('section');
-  info.className = 'card';
-  info.innerHTML = `<b>Mode autonome</b><p class="small">Les relevés et validations restent sur ce téléphone ; les photos sont traitées localement et ne sont pas jointes au rapport. Une connexion est uniquement nécessaire au moment d’envoyer un rapport. Le modèle de vision local doit être installé sur l’appareil avant de pouvoir analyser les photos sans Internet.</p>`;
-  app.querySelector('section')?.before(info);
+  app.querySelector('.intro')?.remove();
+  const info = document.createElement('p');
+  info.className = 'offline-note';
+  info.textContent = 'Mode autonome · Les données et photos restent sur cet appareil.';
+  app.querySelector('h1')?.after(info);
+
+  const offlineStyle = document.createElement('style');
+  offlineStyle.textContent = '.offline-note{margin:4px 0 14px;color:#aeb8b5;font-size:.72rem;line-height:1.35}';
+  document.head.append(offlineStyle);
 
   const preview = document.createElement('section');
   preview.className = 'card report-preview';
