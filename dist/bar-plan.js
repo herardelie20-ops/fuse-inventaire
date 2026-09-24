@@ -34,7 +34,7 @@
     'Bar 1 - Main room': {
       'Frigo 1': 'IMG-20260924-WA0012.jpg', 'Frigo 2': 'IMG-20260924-WA0011.jpg', 'Frigo 3': 'IMG-20260924-WA0010.jpg',
       'Frigo 4': 'IMG-20260924-WA0009.jpg', 'Frigo 5': 'IMG-20260924-WA0008.jpg', 'Frigo 6': 'IMG-20260924-WA0007.jpg',
-      'Frigo 7': 'IMG-20260924-WA0006.jpg', 'Frigo 8': 'IMG-20260924-WA0004.jpg', 'Frigo 9': 'IMG-20260924-WA0005.jpg', 'Frigo 10': 'IMG-20260924-WA0003.jpg', 'Frigo 12': 'IMG-20260924-WA0001.jpg',
+      'Frigo 7': 'IMG-20260924-WA0006.jpg', 'Frigo 8': 'IMG-20260924-WA0004.jpg', 'Frigo 9': 'IMG-20260924-WA0005.jpg', 'Frigo 10': 'IMG-20260924-WA0003.jpg', 'Frigo 11': 'IMG-20260924-WA0002.jpg', 'Frigo 12': 'IMG-20260924-WA0001.jpg',
       'Frigo 15 (Bahut)': 'IMG-20260924-WA0017.jpg',
       'Frigo 16 (Bahut)': 'IMG-20260924-WA0018.jpg', 'Frigo Redbull 17': 'IMG-20260924-WA0019.jpg'
     },
