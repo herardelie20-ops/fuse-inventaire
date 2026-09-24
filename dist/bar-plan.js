@@ -108,7 +108,11 @@
     masks.innerHTML = hideRedbull ? '<span class="plan-hidden-fridge" style="left:34.6%;top:45.7%"></span>' : '';
   }
   function renderReferencePhoto() {
-    const source = referencePhotos[place.value]?.[document.querySelector('#fridge').value];
+    const selectedFridge = document.querySelector('#fridge').value;
+    const isDemenceOnly = place.value === 'Bar 1 - Main room' && selectedFridge === 'Frigo Coca 13';
+    const source = isDemenceOnly && window.FUSE_CURRENT_PROFILE !== 'la-demence'
+      ? ''
+      : referencePhotos[place.value]?.[selectedFridge];
     reference.classList.toggle('hidden', !source);
     if (!source) return;
     referenceImage.src = `reference-photos/${source}`;
