@@ -128,7 +128,7 @@
     [...shelf.options].forEach(option => {
       const mapped = window.FUSE_EXPECTED_DRINK(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, option.value);
       const lineCount = window.FUSE_EXPECTED_LINES(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, option.value).length;
-      option.textContent = mapped ? `${option.value} · ${mapped} · ${lineCount} ligne${lineCount > 1 ? 's' : ''}` : `${option.value} · à définir`;
+      option.textContent = mapped ? `${option.value} · ${mapped} · ${lineCount} ligne${lineCount > 1 ? 's' : ''} · ${window.FUSE_MAX_BOTTLES_PER_LINE} bouteilles/ligne` : `${option.value} · à définir`;
     });
   }
   function refresh() {
