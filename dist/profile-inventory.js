@@ -123,12 +123,19 @@
     const plan = window.FUSE_EXPECTED_DRINK(profile, selectedPlace, selectedFridge, selectedShelf);
     return plan ? plan.split(' · ').map(name => ({ name: productName(name), quantity: '' })) : [];
   };
+  const drinkLineBreakdown = (profile, selectedPlace, selectedFridge, selectedShelf) => {
+    const counts = new Map();
+    window.FUSE_EXPECTED_LINES(profile, selectedPlace, selectedFridge, selectedShelf).forEach(({ name }) => {
+      counts.set(name, (counts.get(name) || 0) + 1);
+    });
+    return [...counts].map(([name, count]) => `${name} : ${count} ligne${count > 1 ? 's' : ''}`).join(' · ');
+  };
   window.FUSE_EXPECTED_BAHUT = (profile, selectedPlace, selectedFridge) => bahutPlans[profile]?.[selectedPlace]?.[selectedFridge] || '';
   function labelShelves() {
     [...shelf.options].forEach(option => {
       const mapped = window.FUSE_EXPECTED_DRINK(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, option.value);
-      const lineCount = window.FUSE_EXPECTED_LINES(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, option.value).length;
-      option.textContent = mapped ? `${option.value} · ${mapped} · ${lineCount} ligne${lineCount > 1 ? 's' : ''} · ${window.FUSE_MAX_BOTTLES_PER_LINE} bouteilles/ligne` : `${option.value} · à définir`;
+      const breakdown = drinkLineBreakdown(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, option.value);
+      option.textContent = mapped ? `${option.value} · ${breakdown}` : `${option.value} · à définir`;
     });
   }
   function refresh() {
@@ -138,9 +145,8 @@
     const isBahut = /\bBahut\b/i.test(fridge.value) && !(place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)');
     const flexibleRedbull = isFlexibleRedbull(place.value, fridge.value);
     const proposal = flexibleRedbull ? '' : isBahut ? window.FUSE_EXPECTED_BAHUT(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value) : proposedDrink();
-    const lineCount = isBahut || flexibleRedbull ? 0 : window.FUSE_EXPECTED_LINES(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, shelf.value).length;
-    const lineLabel = lineCount ? ` · ${lineCount} ligne${lineCount > 1 ? 's' : ''} · max. 7 boissons par ligne` : '';
-    hint.textContent = flexibleRedbull ? `Frigo Red Bull modulable · saisis manuellement les couleurs et les quantités de chaque étage. Aucune proportion n’est imposée.` : proposal ? `Plan ${window.FUSE_CURRENT_PROFILE === 'la-demence' ? 'La Demence' : 'Fuse'} · ${fridge.value}${isBahut ? '' : `, ${shelf.value}`} : ${proposal}${lineLabel}` : `Plan ${window.FUSE_CURRENT_PROFILE === 'la-demence' ? 'La Demence' : 'Fuse'} : emplacement à configurer.`;
+    const breakdown = isBahut || flexibleRedbull ? '' : drinkLineBreakdown(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, shelf.value);
+    hint.textContent = flexibleRedbull ? `Frigo Red Bull modulable · saisis manuellement les couleurs et les quantités de chaque étage. Aucune proportion n’est imposée.` : proposal ? `Plan ${window.FUSE_CURRENT_PROFILE === 'la-demence' ? 'La Demence' : 'Fuse'} · ${fridge.value}${isBahut ? '' : `, ${shelf.value}`} : ${isBahut ? proposal : breakdown}` : `Plan ${window.FUSE_CURRENT_PROFILE === 'la-demence' ? 'La Demence' : 'Fuse'} : emplacement à configurer.`;
     const first = lines.querySelector('input[placeholder]');
     if (!isBahut && proposal && first && (!first.value || first.dataset.profileSuggested === 'true')) { first.value = proposal; first.dataset.profileSuggested = 'true'; }
     if ((!proposal || isBahut) && first?.dataset.profileSuggested === 'true') { first.value = ''; delete first.dataset.profileSuggested; }
