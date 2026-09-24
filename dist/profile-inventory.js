@@ -119,39 +119,19 @@
     "Jus d'orange Minute Maid": "Jus d'orange",
     'Jus de pomme Minute Maid': 'Jus de pomme'
   })[name] || name;
-  // Quantités relevées sur la rangée visible des photos. Une valeur reste modifiable
-  // dans la saisie manuelle si le rangement du jour est différent.
+  // Comptages confirmés sur la rangée visible au premier plan. Les bouteilles
+  // situées derrière ne font pas partie de ce nombre.
   const photoBottleCounts = {
     'Bar 1 - Main room': {
-      'Frigo 4': {
-        'Étage 1 — haut': [2, 5, 2],
-        'Étage 2': [2, 2, 5],
-        'Étage 3 — rez-de-chaussée': [1, 1, 2, 1, 5]
-      },
-      'Frigo 7': {
-        'Étage 2': [5, 2, 2]
-      },
-      'Frigo 8': {
-        'Étage 1 — haut': [7], 'Étage 2': [7], 'Étage 3 — rez-de-chaussée': [6]
-      },
-      'Frigo 9': {
-        'Étage 1 — haut': [7], 'Étage 2': [7], 'Étage 3 — rez-de-chaussée': [6]
-      }
-    },
-    'Bar 3 - Motion': {
-      'Frigo 4': {
-        'Étage 1 — haut': [7], 'Étage 2': [7], 'Étage 3 — rez-de-chaussée': [7]
-      }
-    },
-    'Bar 4 - Cosmos': {
-      'Frigo 5 (Red Bull)': {
-        'Étage 1 — haut': [2, 2, 2, 2], 'Étage 2': [7], 'Étage 3': [7],
-        'Étage 4': [7], 'Étage 5': [7], 'Étage 6 — bas': [5, 2, 2]
+      'Frigo 3': {
+        'Étage 1 — haut': [2, 3, 2],
+        'Étage 2': [2, 3, 2],
+        'Étage 3 — rez-de-chaussée': [6]
       }
     }
   };
   const bottlesFor = (profile, selectedPlace, selectedFridge, selectedShelf, index) =>
-    photoBottleCounts[selectedPlace]?.[selectedFridge]?.[selectedShelf]?.[index] ?? 7;
+    photoBottleCounts[selectedPlace]?.[selectedFridge]?.[selectedShelf]?.[index] ?? '';
   window.FUSE_EXPECTED_LINES = (profile, selectedPlace, selectedFridge, selectedShelf) => {
     const plan = window.FUSE_EXPECTED_DRINK(profile, selectedPlace, selectedFridge, selectedShelf);
     return plan ? plan.split(' · ').map((name, index) => ({
@@ -160,11 +140,11 @@
     })) : [];
   };
   const drinkLineBreakdown = (profile, selectedPlace, selectedFridge, selectedShelf) => {
-    const counts = new Map();
-    window.FUSE_EXPECTED_LINES(profile, selectedPlace, selectedFridge, selectedShelf).forEach(({ name, quantity }) => {
-      counts.set(name, (counts.get(name) || 0) + Number(quantity || 0));
-    });
-    return [...counts].map(([name, count]) => `${name} : ${count} bouteille${count > 1 ? 's' : ''}`).join(' · ');
+    return window.FUSE_EXPECTED_LINES(profile, selectedPlace, selectedFridge, selectedShelf)
+      .map(({ name, quantity }) => quantity === ''
+        ? `${name} : à compter sur la photo`
+        : `${name} : ${quantity} bouteille${quantity > 1 ? 's' : ''}`)
+      .join(' · ');
   };
   window.FUSE_EXPECTED_BAHUT = (profile, selectedPlace, selectedFridge) => bahutPlans[profile]?.[selectedPlace]?.[selectedFridge] || '';
   function labelShelves() {
