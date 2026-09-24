@@ -87,6 +87,18 @@
   Object.assign(translations.en, {
     'Configurer le contenu du frigo': 'Configure fridge contents', 'Configurer les étages du frigo': 'Configure fridge shelves', 'Saisie manuelle par étage': 'Manual entry by shelf', 'Ouvre un étage, cherche une boisson ou choisis-la dans le catalogue, puis indique la quantité présente sur chaque ligne.': 'Open a shelf, search for a drink or choose it from the catalogue, then enter the quantity on each row.', 'Recherche rapide': 'Quick search', 'Rechercher une boisson': 'Search for a drink', 'À configurer': 'To configure', '+ Ligne de boisson': '+ Drink row', 'Enregistrer cet étage': 'Save this shelf', 'Ajoute au moins une boisson avant d’enregistrer.': 'Add at least one drink before saving.', 'Soft drinks': 'Soft drinks', 'Bières': 'Beers', 'Vins et spéciaux': 'Wines and specials', 'Spiritueux': 'Spirits', 'Sirops': 'Syrups'
   });
+  Object.assign(translations.nl, {
+    'Eau pétillante': 'bruswater', 'Eau plate': 'spaatwater', "Jus d’orange": 'sinaasappelsap', "Jus d'orange": 'sinaasappelsap', 'Jus de pomme': 'appelsap', 'Ginger beer': 'gemberbier',
+    'Vin blanc': 'witte wijn', 'Vin rosé': 'roséwijn', 'Rhum brun': 'bruine rum', 'Rhum blanc': 'witte rum', 'Vodka rouge': 'rode vodka',
+    'Sirop de grenadine': 'grenadinesiroop', 'Sirop de menthe': 'muntsiroop', 'Produits d’entretien': 'schoonmaakproducten',
+    'bacs d’eau': 'kratten water', 'bacs de ': 'kratten '
+  });
+  Object.assign(translations.en, {
+    'Eau pétillante': 'sparkling water', 'Eau plate': 'still water', "Jus d’orange": 'orange juice', "Jus d'orange": 'orange juice', 'Jus de pomme': 'apple juice', 'Ginger beer': 'ginger beer',
+    'Vin blanc': 'white wine', 'Vin rosé': 'rosé wine', 'Rhum brun': 'dark rum', 'Rhum blanc': 'white rum', 'Vodka rouge': 'red vodka',
+    'Sirop de grenadine': 'grenadine syrup', 'Sirop de menthe': 'mint syrup', 'Produits d’entretien': 'cleaning products',
+    'bacs d’eau': 'crates of water', 'bacs de ': 'crates of '
+  });
   const originals = new WeakMap(); const attributes = ['placeholder', 'title', 'aria-label'];
   const locale = () => localStorage.getItem('fuse-language') || 'fr';
   function translate(value, language) {
