@@ -27,9 +27,7 @@
     'Stock Motion - sous plancher':['Liste boissons Motion à compléter'],
     "Stock étage Cosmos - sous l'escalier":['Liste boissons étage Cosmos à compléter']
   };
-  const visibleUnits = value => (window.FUSE_CURRENT_PROFILE === 'la-demence' && value === 'Bar 1 - Main room')
-    ? barUnits[value].filter(unit => unit !== 'Frigo Redbull 17')
-    : barUnits[value];
+  const visibleUnits = value => barUnits[value];
   function update(){
     const v=place.value, previous=select.value; label.childNodes[0].nodeValue='Frigo';
     if(barUnits[v]) { const units=visibleUnits(v); select.innerHTML=options(units); if(units.includes(previous)) select.value=previous; }

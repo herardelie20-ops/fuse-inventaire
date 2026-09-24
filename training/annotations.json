@@ -17,7 +17,7 @@
     {"photo":"IMG-20260924-WA0013.jpg","bar":"Bar 1 - Main room","fridge":"Frigo Coca 14","profiles":["la-demence"]},
     {"photo":"IMG-20260924-WA0017.jpg","bar":"Bar 1 - Main room","fridge":"Frigo 15 (Bahut)","profiles":["fuse","la-demence"]},
     {"photo":"IMG-20260924-WA0018.jpg","bar":"Bar 1 - Main room","fridge":"Frigo 16 (Bahut)","profiles":["fuse","la-demence"]},
-    {"photo":"IMG-20260924-WA0019.jpg","bar":"Bar 1 - Main room","fridge":"Frigo Redbull 17","profiles":["fuse"],"flexible":true},
+    {"photo":"IMG-20260924-WA0019.jpg","bar":"Bar 1 - Main room","fridge":"Frigo Redbull 17","profiles":["fuse","la-demence"],"flexible":true},
     {"photo":"IMG-20260924-WA0021.jpg","bar":"Bar 2 - Main room","fridge":"Frigo 1","profiles":["fuse","la-demence"],"flexible":true},
     {"photo":"IMG-20260924-WA0021(1).jpg","bar":"Bar 2 - Main room","fridge":"Frigo 6","profiles":["fuse","la-demence"],"flexible":true},
     {"photo":"IMG-20260924-WA0034.jpg","bar":"Bar 3 - Motion","fridge":"Frigo 1","profiles":["fuse","la-demence"]},

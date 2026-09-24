@@ -97,15 +97,14 @@
   }
 
   function renderMarkers() {
-    markers.innerHTML = (planMarkers[place.value] || []).filter(([fridge]) => !(window.FUSE_CURRENT_PROFILE === 'la-demence' && place.value === 'Bar 1 - Main room' && fridge === 'Frigo Redbull 17')).map(([fridge, label, left, top]) => {
+    markers.innerHTML = (planMarkers[place.value] || []).map(([fridge, label, left, top]) => {
       const state = fridgeState(fridge);
       return `<button class="fridge-marker ${state}" type="button" data-fridge="${fridge}" title="Ouvrir ${fridge}" aria-label="Ouvrir ${fridge}" style="left:${left}%;top:${top}%">${label}</button>`;
     }
     ).join('');
   }
   function renderMasks() {
-    const hideRedbull = window.FUSE_CURRENT_PROFILE === 'la-demence' && place.value === 'Bar 1 - Main room';
-    masks.innerHTML = hideRedbull ? '<span class="plan-hidden-fridge" style="left:34.6%;top:45.7%"></span>' : '';
+    masks.innerHTML = '';
   }
   function renderReferencePhoto() {
     const selectedFridge = document.querySelector('#fridge').value;
