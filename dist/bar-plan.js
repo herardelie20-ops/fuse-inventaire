@@ -4,14 +4,21 @@
   const plan = document.createElement('section');
   plan.id = 'barPlan';
   plan.className = 'card';
-  plan.innerHTML = '<b id="barPlanTitle">Plan du lieu</b><p id="barPlanNote" class="small"></p><div id="barPlanCanvas"><img id="barPlanImage" alt="Plan du bar sélectionné"><div id="planMasks"></div><div id="fridgeMarkers"></div></div>';
+  plan.innerHTML = '<b id="barPlanTitle">Plan du lieu</b><p id="barPlanNote" class="small"></p><div id="planReferenceLayout"><figure id="fridgeReference" class="hidden"><img id="fridgeReferenceImage" alt="Photo de référence du frigo"><figcaption id="fridgeReferenceCaption"></figcaption></figure><div id="barPlanCanvas"><img id="barPlanImage" alt="Plan du bar sélectionné"><div id="planMasks"></div><div id="fridgeMarkers"></div></div></div>';
   selectorCard.after(plan);
+
+  const planStyle = document.createElement('style');
+  planStyle.textContent = '#planReferenceLayout{display:grid;grid-template-columns:minmax(170px,.72fr) minmax(0,1.28fr);gap:12px;align-items:start;margin-top:12px}#fridgeReference{margin:0;border:1px solid #555;border-radius:9px;overflow:hidden;background:#050505}#fridgeReference img{display:block;width:100%;max-height:390px;object-fit:contain;background:#000}#fridgeReference figcaption{padding:8px 9px;color:#d4d4d4;font-size:.78rem;font-weight:700;line-height:1.3}@media(max-width:560px){#planReferenceLayout{grid-template-columns:1fr}#fridgeReference img{max-height:300px}}';
+  document.head.append(planStyle);
 
   const title = plan.querySelector('#barPlanTitle');
   const note = plan.querySelector('#barPlanNote');
   const image = plan.querySelector('#barPlanImage');
   const markers = plan.querySelector('#fridgeMarkers');
   const masks = plan.querySelector('#planMasks');
+  const reference = plan.querySelector('#fridgeReference');
+  const referenceImage = plan.querySelector('#fridgeReferenceImage');
+  const referenceCaption = plan.querySelector('#fridgeReferenceCaption');
   const planImages = {
     'Bar 1 - Main room': 'plan-bar-1.png',
     'Bar 2 - Main room': 'plan-bar-2.png',
@@ -22,6 +29,25 @@
     'Stock chambre froide - Bar 2 Main room': 'plan-bar-2.png',
     'Stock Bar 3 - Motion': 'plan-bar-3.png',
     'Stock Bar 4 - Cosmos': 'plan-bar-4.png'
+  };
+  const referencePhotos = {
+    'Bar 1 - Main room': {
+      'Frigo 1': 'IMG-20260924-WA0012.jpg', 'Frigo 2': 'IMG-20260924-WA0011.jpg', 'Frigo 3': 'IMG-20260924-WA0010.jpg',
+      'Frigo 4': 'IMG-20260924-WA0009.jpg', 'Frigo 5': 'IMG-20260924-WA0008.jpg', 'Frigo 6': 'IMG-20260924-WA0007.jpg',
+      'Frigo 7': 'IMG-20260924-WA0006.jpg', 'Frigo 8': 'IMG-20260924-WA0004.jpg', 'Frigo 9': 'IMG-20260924-WA0005.jpg',
+      'Frigo Coca 14': 'IMG-20260924-WA0013.jpg', 'Frigo 15 (Bahut)': 'IMG-20260924-WA0017.jpg',
+      'Frigo 16 (Bahut)': 'IMG-20260924-WA0018.jpg', 'Frigo Redbull 17': 'IMG-20260924-WA0019.jpg'
+    },
+    'Bar 2 - Main room': {'Frigo 1': 'IMG-20260924-WA0021.jpg', 'Frigo 6': 'IMG-20260924-WA0021(1).jpg'},
+    'Bar 3 - Motion': {
+      'Frigo 1': 'IMG-20260924-WA0034.jpg', 'Frigo 2': 'IMG-20260924-WA0035.jpg', 'Frigo 3': 'IMG-20260924-WA0036.jpg',
+      'Frigo 4': 'IMG-20260924-WA0037.jpg', 'Frigo 5': 'IMG-20260924-WA0038.jpg', 'Frigo 6': 'IMG-20260924-WA0039.jpg',
+      'Frigo Redbull 13': 'IMG-20260924-WA0040.jpg'
+    },
+    'Bar 4 - Cosmos': {
+      'Frigo 1': 'IMG-20260924-WA0047.jpg', 'Frigo 2': 'IMG-20260924-WA0046.jpg', 'Frigo 3': 'IMG-20260924-WA0045.jpg',
+      'Frigo 4': 'IMG-20260924-WA0044.jpg', 'Frigo 5 (Red Bull)': 'IMG-20260924-WA0042.jpg', 'Frigo 6 (Coca)': 'IMG-20260924-WA0043.jpg'
+    }
   };
 
   const bar1Markers = [
@@ -81,6 +107,13 @@
     const hideRedbull = window.FUSE_CURRENT_PROFILE === 'la-demence' && place.value === 'Bar 1 - Main room';
     masks.innerHTML = hideRedbull ? '<span class="plan-hidden-fridge" style="left:34.6%;top:45.7%"></span>' : '';
   }
+  function renderReferencePhoto() {
+    const source = referencePhotos[place.value]?.[document.querySelector('#fridge').value];
+    reference.classList.toggle('hidden', !source);
+    if (!source) return;
+    referenceImage.src = `reference-photos/${source}`;
+    referenceCaption.textContent = `Photo de référence — ${document.querySelector('#fridge').value}`;
+  }
 
   function updatePlan() {
     const planImage = planImages[place.value];
@@ -95,20 +128,24 @@
         note.innerHTML = 'Repères : <span class="plan-state white">blanc</span> à faire · <span class="plan-state orange">orange</span> en cours · <span class="plan-state red">rouge</span> avec erreur · <span class="plan-state green">vert</span> validé.';
         renderMarkers();
         renderMasks();
+        renderReferencePhoto();
       } else {
         note.textContent = 'Plan du bar associé à ce stock interne.';
         markers.innerHTML = '';
         masks.innerHTML = '';
+        reference.classList.add('hidden');
       }
     } else {
       image.hidden = true;
       markers.innerHTML = '';
       note.textContent = 'Plan à ajouter pour ce bar.';
+      reference.classList.add('hidden');
     }
   }
 
   place.addEventListener('change', () => setTimeout(updatePlan, 0));
   place.addEventListener('input', () => setTimeout(updatePlan, 0));
+  document.querySelector('#fridge').addEventListener('change', renderReferencePhoto);
   markers.addEventListener('click', event => {
     const marker = event.target.closest('[data-fridge]');
     if (!marker) return;
@@ -117,6 +154,7 @@
     document.querySelector('#fridge').value = selected;
     document.querySelector('#fridge').dispatchEvent(new Event('change', { bubbles: true }));
     document.querySelector('#fridge').dispatchEvent(new Event('input', { bubbles: true }));
+    renderReferencePhoto();
   });
   document.addEventListener('fuse:fridge-finished', renderMarkers);
   document.addEventListener('fuse:fridge-progress', renderMarkers);
