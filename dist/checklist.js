@@ -22,7 +22,7 @@
   const issueLabel = panel.querySelector('#issueLabel');
   const summary = panel.querySelector('#stateSummary');
   const isBar = () => place.value.startsWith('Bar ');
-  const isBahut = () => /^Bahut\b/i.test(fridge.value);
+  const isBahut = () => /\bBahut\b/i.test(fridge.value) && !(place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)');
   const hasShelves = () => isBar() && !isBahut();
   const shelfKey = name => `fuse-shelf-${place.value}-${fridge.value}-${name}`;
   const fridgeKey = () => `fuse-check-${place.value}-${fridge.value}`;

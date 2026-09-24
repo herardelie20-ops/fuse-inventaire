@@ -12,6 +12,7 @@
   panel.className = 'card hidden stock-panel';
   panel.innerHTML = `
     <b>Comptage du stock</b>
+    <p class="small" id="stockPlanHint"></p>
     <p class="small">Ajoute plusieurs photos avant de préparer l’analyse. La saisie manuelle reste toujours disponible.</p>
     <section class="stock-photo-series">
       <b>Série photo — caisses et paquets</b>
@@ -38,6 +39,9 @@
   save.before(panel);
 
   const q = id => panel.querySelector(id);
+  const stockPlans = {
+    'Stock Bar 1 - Main room': "Tonic · Coca-Cola · Jus d'orange · Jus de pomme · Eau plate · Eau pétillante · Redbull (classique, rouge, vert et Zero) · Bières spéciales sous la pompe : Corona · Duvel · Salitos · Jupiler Zero"
+  };
   const rows = q('#stockRows');
   const isStock = () => !place.value.startsWith('Bar ');
   const isInternalBarStock = () => place.value.startsWith('Stock Bar ');
@@ -115,6 +119,7 @@
     productCard.classList.toggle('hidden', stock);
     if (photoCard) photoCard.classList.toggle('hidden', stock);
     if (!stock) return;
+    q('#stockPlanHint').textContent = stockPlans[place.value] ? `Plan de stock commun à Fuse et La Démence : ${stockPlans[place.value]}.` : '';
     if (activePlace !== place.value) {
       activePlace = place.value;
       batchFiles = {};

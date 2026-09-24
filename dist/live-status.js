@@ -46,7 +46,7 @@
     if (states.includes('error')) return 'error';
     return states.includes('progress') ? 'progress' : 'pending';
   };
-  const hasShelf = () => !isStock() && !/^Bahut\b/i.test(unitName());
+  const hasShelf = () => !isStock() && (!/\bBahut\b/i.test(unitName()) || (place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)'));
   const unitState = name => {
     if (isStock()) {
       try {

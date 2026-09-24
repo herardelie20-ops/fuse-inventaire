@@ -33,7 +33,7 @@
 
   const q = id => panel.querySelector(id) || document.querySelector(id);
   const isBar = () => place.value.startsWith('Bar ');
-  const isBahut = () => /^Bahut\b/i.test(fridge.value);
+  const isBahut = () => /\bBahut\b/i.test(fridge.value) && !(place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)');
   const fridgeKey = () => `fuse-check-${place.value}-${fridge.value}`;
   const shelfKey = name => `fuse-shelf-${place.value}-${fridge.value}-${name}`;
   const shelfNames = () => [...shelf.options].map(option => option.value);
@@ -45,26 +45,28 @@
   const catalogue = () => [
     ['Soft drinks', window.FUSE_SOFTS || []], ['Bières', window.FUSE_BEERS || []], ['Vins et spéciaux', window.FUSE_FRIDGE_SPECIALS || []], ['Spiritueux', window.FUSE_SPIRITS || []], ['Sirops', window.FUSE_SYRUPS || []]
   ].map(([category, products]) => [category, [...products].sort((a, b) => a.localeCompare(b, 'fr'))]);
-  const lineMarkup = (item = {}) => `<div class="manual-drink-line"><input class="manual-drink-name" value="${String(item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" placeholder="Boisson"><input class="manual-drink-quantity" type="number" min="0" inputmode="numeric" value="${item.quantity ?? ''}" placeholder="0"><button type="button" class="manual-remove" aria-label="Supprimer">×</button></div>`;
+  const maxBottlesPerLine = () => window.FUSE_MAX_BOTTLES_PER_LINE || 7;
+  const lineMarkup = (item = {}) => `<div class="manual-drink-line"><input class="manual-drink-name" value="${String(item.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" placeholder="Boisson"><input class="manual-drink-quantity" type="number" min="0" max="${maxBottlesPerLine()}" inputmode="numeric" value="${item.quantity ?? ''}" placeholder="0"><button type="button" class="manual-remove" aria-label="Supprimer">×</button></div>`;
   const bottleMarkup = (item, index) => `<button type="button" class="manual-bottle ${item?.name ? 'filled' : ''} ${index === 0 ? 'selected' : ''}" data-bottle-index="${index}" title="${item?.name || `Ligne ${index + 1}`}">${index + 1}</button>`;
   function renderManualShelves() {
     const list = q('#manualShelfList');
     if (!list) return;
     list.innerHTML = shelfNames().map(name => {
       const record = read(shelfKey(name)) || {};
-      const entries = record.referenceLines || [];
+      const entries = record.referenceLines || window.FUSE_EXPECTED_LINES?.(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, name) || [];
       const total = entries.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
       const defaultQuantity = entries[0]?.quantity ?? '';
       const groups = catalogue().map(([category, products]) => `<section class="manual-category"><b>${category}</b><div>${products.map(product => `<button type="button" class="manual-product" data-product="${product}">${product}</button>`).join('')}</div></section>`).join('');
       const current = entries.length ? entries : [{}];
-      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><div class="manual-quick"><label>Nombre de lignes<input class="manual-line-count" type="number" min="1" inputmode="numeric" value="${current.length}"></label><label>Boissons par ligne<input class="manual-default-quantity" type="number" min="0" inputmode="numeric" value="${defaultQuantity}"></label><button type="button" class="secondary manual-generate">Appliquer</button></div><div class="bottle-rail">${current.map(bottleMarkup).join('')}</div><span class="manual-bottle-label">Ligne 1 : choisis une boisson</span><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${current.map(lineMarkup).join('')}</div><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
+      return `<details class="manual-shelf" data-shelf="${name}"><summary><span>${label(name)}</span><small>${entries.length ? `${entries.length} ligne(s) · ${total} boisson(s)` : 'À configurer'}</small></summary><div class="manual-shelf-body"><div class="manual-quick"><label>Nombre de lignes<input class="manual-line-count" type="number" min="1" inputmode="numeric" value="${current.length}"></label><label>Boissons par ligne (max. ${maxBottlesPerLine()})<input class="manual-default-quantity" type="number" min="0" max="${maxBottlesPerLine()}" inputmode="numeric" value="${defaultQuantity}"></label><button type="button" class="secondary manual-generate">Appliquer</button></div><div class="bottle-rail">${current.map(bottleMarkup).join('')}</div><span class="manual-bottle-label">Ligne 1 : choisis une boisson</span><label>Recherche rapide<input class="manual-search" type="search" placeholder="Rechercher une boisson"></label><div class="manual-catalogue">${groups}</div><div class="manual-drink-lines">${current.map(lineMarkup).join('')}</div><button type="button" class="primary manual-save-shelf">Enregistrer cet étage</button><p class="small manual-save-note"></p></div></details>`;
     }).join('');
   }
 
   function label(name) {
     const drink = window.FUSE_EXPECTED_DRINK?.(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, name);
+    const lineCount = window.FUSE_EXPECTED_LINES?.(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, name).length || 0;
     const position = name.replace(' — haut', ' — photo 1').replace(' — bas', ' — dernière photo');
-    return drink ? `${position} · ${drink}` : `${position} · à définir`;
+    return drink ? `${position} · ${drink} · ${lineCount} ligne${lineCount > 1 ? 's' : ''}` : `${position} · à définir`;
   }
   function updateProgress() {
     const expected = shelfNames().length;
@@ -195,7 +197,8 @@
     }
     if (event.target.closest('.manual-generate')) {
       const count = Math.max(1, Number(floor.querySelector('.manual-line-count').value || 1));
-      const quantity = floor.querySelector('.manual-default-quantity').value;
+      const quantity = Math.min(maxBottlesPerLine(), Math.max(0, Number(floor.querySelector('.manual-default-quantity').value || 0)));
+      floor.querySelector('.manual-default-quantity').value = quantity;
       const current = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value, quantity: row.querySelector('.manual-drink-quantity').value }));
       lines.innerHTML = Array.from({ length: count }, (_, index) => lineMarkup({ ...current[index], quantity: current[index]?.quantity ?? quantity })).join('');
       const updated = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value }));
@@ -210,6 +213,7 @@
       const referenceLines = [...lines.querySelectorAll('.manual-drink-line')].map(row => ({ name: row.querySelector('.manual-drink-name').value.trim(), quantity: Number(row.querySelector('.manual-drink-quantity').value || 0) })).filter(item => item.name);
       const note = floor.querySelector('.manual-save-note');
       if (!referenceLines.length) { note.textContent = 'Ajoute au moins une boisson avant d’enregistrer.'; return; }
+      if (referenceLines.some(item => item.quantity > maxBottlesPerLine())) { note.textContent = `Une ligne ne peut pas dépasser ${maxBottlesPerLine()} boissons.`; return; }
       const existing = read(shelfKey(name)) || {};
       const total = referenceLines.reduce((sum, item) => sum + item.quantity, 0);
       localStorage.setItem(shelfKey(name), JSON.stringify({ ...existing, referenceLines, count: total, quantity: 'manual', alignment: 'manual', hadIssue: false, analysisSource: 'manual', counted: true, completed: true, manualValidated: true, referenceSavedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }));

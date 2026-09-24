@@ -18,7 +18,7 @@
 
   const rows = panel.querySelector('#bahutRows');
   const total = panel.querySelector('#bahutTotal');
-  const isBahut = () => place.value.startsWith('Bar ') && /^Bahut\b/i.test(fridge.value);
+  const isBahut = () => place.value.startsWith('Bar ') && /\bBahut\b/i.test(fridge.value) && !(place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)');
   const key = () => `fuse-bahut-${place.value}-${fridge.value}`;
   const fridgeKey = () => `fuse-check-${place.value}-${fridge.value}`;
   const packProducts = () => Object.keys(window.FUSE_PACK_SIZES || {}).sort((a, b) => a.localeCompare(b, 'fr'));

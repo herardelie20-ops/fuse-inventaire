@@ -15,3 +15,108 @@
   document.querySelector('#cameraInput').addEventListener('change', indicatePhotoReady);
   document.querySelector('#fileInput').addEventListener('change', indicatePhotoReady);
 })();
+
+(() => {
+  const place = document.querySelector('#bar');
+  const fridge = document.querySelector('#fridge');
+  const shelf = document.querySelector('#shelf');
+  if (!place || !fridge || !shelf || !('indexedDB' in window)) return;
+
+  const card = document.createElement('section');
+  card.className = 'card';
+  card.innerHTML = `<b>Photo d’apprentissage — étage</b><p class="small" id="trainingMeta"></p><p class="small">Prends une photo nette de cet étage uniquement. Elle est conservée hors ligne avec le lieu, le frigo, l’étage et ta validation manuelle.</p><div class="camera" id="trainingPreview"><span>Aucune photo d’apprentissage sélectionnée</span><img></div><div class="actions"><button class="primary" id="trainingCamera" type="button">Prendre la photo de l’étage</button><button class="secondary" id="trainingImport" type="button">Importer</button></div><input class="hidden" id="trainingCameraInput" type="file" accept="image/*" capture="environment"><input class="hidden" id="trainingImportInput" type="file" accept="image/*"><button class="primary" id="trainingSave" type="button">Archiver la photo validée</button><p class="small" id="trainingStatus"></p><button class="secondary" id="trainingExport" type="button">Exporter les données IA</button><p class="small" id="trainingCount"></p>`;
+  shelf.closest('section')?.after(card);
+
+  const q = id => card.querySelector(id);
+  const preview = q('#trainingPreview');
+  const previewImage = preview.querySelector('img');
+  const previewLabel = preview.querySelector('span');
+  let selectedFile = null;
+  let previewUrl = '';
+  const db = () => new Promise((resolve, reject) => {
+    const request = indexedDB.open('fuse-training-data', 1);
+    request.onupgradeneeded = () => request.result.createObjectStore('samples', { keyPath: 'id' });
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  const withStore = (mode, action) => db().then(database => new Promise((resolve, reject) => {
+    const transaction = database.transaction('samples', mode);
+    const request = action(transaction.objectStore('samples'));
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  }));
+  const allSamples = () => withStore('readonly', store => store.getAll());
+  const saveSample = sample => withStore('readwrite', store => store.put(sample));
+  const imageData = file => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
+  const shelfKey = () => `fuse-shelf-${place.value}-${fridge.value}-${shelf.value}`;
+  const currentValidation = () => { try { return JSON.parse(localStorage.getItem(shelfKey())); } catch { return null; } };
+  const expectedLines = () => window.FUSE_EXPECTED_LINES?.(window.FUSE_CURRENT_PROFILE || 'fuse', place.value, fridge.value, shelf.value) || [];
+  const currentLines = () => currentValidation()?.referenceLines || [];
+  const lineSummary = () => {
+    const lines = currentLines();
+    if (lines.length) return `${lines.length} ligne(s) validée(s) · ${lines.map(line => `${line.name} : ${line.quantity}`).join(' · ')}`;
+    const expected = expectedLines();
+    return expected.length ? `Plan prévu : ${expected.map(line => line.name).join(' · ')} · validation manuelle à enregistrer` : 'Validation manuelle à enregistrer';
+  };
+  const updateCount = async () => { try { q('#trainingCount').textContent = `${(await allSamples()).length} photo(s) validée(s) stockée(s) localement pour l’IA.`; } catch { q('#trainingCount').textContent = 'Stockage local indisponible sur cet appareil.'; } };
+  const refresh = () => {
+    q('#trainingMeta').textContent = `${place.value} · ${fridge.value} · ${shelf.value} · ${lineSummary()}`;
+    updateCount();
+  };
+  const pick = file => {
+    if (!file) return;
+    selectedFile = file;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(file);
+    previewImage.src = previewUrl;
+    previewImage.style.display = 'block';
+    previewLabel.style.display = 'none';
+    q('#trainingStatus').textContent = 'Photo prête. Enregistre d’abord les lignes et quantités dans la validation manuelle, puis archive-la.';
+  };
+  q('#trainingCamera').addEventListener('click', () => q('#trainingCameraInput').click());
+  q('#trainingImport').addEventListener('click', () => q('#trainingImportInput').click());
+  q('#trainingCameraInput').addEventListener('change', event => pick(event.target.files[0]));
+  q('#trainingImportInput').addEventListener('change', event => pick(event.target.files[0]));
+  q('#trainingSave').addEventListener('click', async () => {
+    if (!selectedFile) { q('#trainingStatus').textContent = 'Prends ou importe d’abord la photo de cet étage.'; return; }
+    const lines = currentLines();
+    if (!lines.length) { q('#trainingStatus').textContent = 'Enregistre d’abord la validation manuelle de cet étage : boissons et quantités par ligne.'; return; }
+    const sample = {
+      id: `${Date.now()}-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`,
+      createdAt: new Date().toISOString(),
+      place: place.value,
+      fridge: fridge.value,
+      shelf: shelf.value,
+      profile: window.FUSE_CURRENT_PROFILE || 'fuse',
+      maxBottlesPerLine: window.FUSE_MAX_BOTTLES_PER_LINE || 7,
+      lines,
+      photoName: selectedFile.name || 'etage.jpg',
+      photoType: selectedFile.type || 'image/jpeg',
+      photo: selectedFile
+    };
+    try {
+      await saveSample(sample);
+      q('#trainingStatus').textContent = 'Photo et validation archivées hors ligne. Elles seront incluses dans l’export IA.';
+      selectedFile = null;
+      q('#trainingCameraInput').value = ''; q('#trainingImportInput').value = '';
+      refresh();
+    } catch { q('#trainingStatus').textContent = 'Impossible d’archiver la photo sur cet appareil.'; }
+  });
+  q('#trainingExport').addEventListener('click', async () => {
+    try {
+      const samples = await allSamples();
+      if (!samples.length) { q('#trainingStatus').textContent = 'Aucune photo validée à exporter.'; return; }
+      q('#trainingStatus').textContent = 'Préparation de l’export IA…';
+      const exported = await Promise.all(samples.map(async sample => ({ ...sample, photo: await imageData(sample.photo) })));
+      const blob = new Blob([JSON.stringify({ format: 'fuse-training-export/v1', exportedAt: new Date().toISOString(), samples: exported }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a'); link.href = url; link.download = `fuse-ia-${new Date().toISOString().slice(0, 10)}.json`; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      q('#trainingStatus').textContent = `${samples.length} photo(s) et leurs validations ont été exportées.`;
+    } catch { q('#trainingStatus').textContent = 'Impossible de préparer l’export IA.'; }
+  });
+  [place, fridge, shelf].forEach(control => control.addEventListener('change', () => setTimeout(refresh, 0)));
+  document.addEventListener('fuse:fridge-progress', refresh);
+  document.addEventListener('fuse-profile-changed', refresh);
+  refresh();
+})();

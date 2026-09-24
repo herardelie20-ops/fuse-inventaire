@@ -9,13 +9,16 @@
   const addButton = document.querySelector('#add');
   const standardShelves = ['Étage 1 — haut', 'Étage 2', 'Étage 3 — rez-de-chaussée'];
   const fourShelves = ['Étage 1 — haut', 'Étage 2', 'Étage 3', 'Étage 4 — bas'];
+  const sixShelves = ['Étage 1 — haut', 'Étage 2', 'Étage 3', 'Étage 4', 'Étage 5', 'Étage 6 — bas'];
   const blueFridgeShelves = ['Étage 1 — haut', 'Étage 2', 'Étage 3 — rez-de-chaussée'];
   const redbullShelves = ['Étage 1 — haut', 'Étage 2 — bas'];
-  const isBahut = () => /^Bahut\b/i.test(fridge.value);
-  const isRedbull = () => /redbull/i.test(fridge.value);
+  const isBahut = () => /\bBahut\b/i.test(fridge.value) && !(place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)');
+  const isRedbull = () => /red ?bull/i.test(fridge.value);
   const isBlueFridge = () => /^Frigo \d+$/.test(fridge.value);
-  const hasTwoFloors = () => (place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 3') || (place.value === 'Bar 2 - Main room' && fridge.value === 'Frigo 4') || (place.value === 'Bar 1 - Main room' && fridge.value === 'Frigo 12');
-  const hasFourFloors = () => place.value === 'Bar 4 - Cosmos' && ['Frigo 5', 'Frigo 6'].includes(fridge.value);
+  const hasTwoFloors = () => (place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 3') || (place.value === 'Bar 2 - Main room' && fridge.value === 'Frigo 4');
+  const hasFourFloors = () => place.value === 'Bar 4 - Cosmos' && ['Frigo 2', 'Frigo 5 (Red Bull)', 'Frigo 6 (Coca)'].includes(fridge.value);
+  const hasSixFloors = () => place.value === 'Bar 4 - Cosmos' && fridge.value === 'Frigo 5 (Red Bull)';
+  const hasThreeRedbullFloors = () => (place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 9 (Red Bull)') || (place.value === 'Bar 1 - Main room' && fridge.value === 'Frigo Redbull 17');
   const isBar = () => place.value.startsWith('Bar ');
   function setOptions(names) {
     if ([...shelf.options].map(option => option.value).join('|') !== names.join('|')) shelf.innerHTML = names.map(name => `<option value="${name}">${name}</option>`).join('');
@@ -40,7 +43,7 @@
   function refresh() {
     const showShelves = isBar() && !isBahut();
     shelfLabel.classList.toggle('hidden', !showShelves);
-    if (showShelves) setOptions(hasFourFloors() ? fourShelves : isRedbull() || (isBlueFridge() && hasTwoFloors()) ? redbullShelves : isBlueFridge() ? blueFridgeShelves : standardShelves);
+    if (showShelves) setOptions(hasSixFloors() ? sixShelves : hasFourFloors() ? fourShelves : hasThreeRedbullFloors() ? standardShelves : isRedbull() || (isBlueFridge() && hasTwoFloors()) ? redbullShelves : isBlueFridge() ? blueFridgeShelves : standardShelves);
     setBahutInput(isBar() && isBahut());
   }
   place.addEventListener('change', () => setTimeout(refresh, 0));

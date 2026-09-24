@@ -3,7 +3,7 @@ window.FUSE_SOFTS = [
   'Eau pétillante', 'Eau plate', 'Maté', 'Ginger beer', 'Tonic', 'Redbull', 'Redbull rouge',
   'Redbull Zero', 'Redbull vert', 'Sprite', 'Fanta'
 ];
-window.FUSE_BEERS = ['Jupiler', 'Jupiler Zero', 'Stella', 'Hoegaarden rosé', 'Duvel', 'Sanlitros', 'Corona', 'Victoria', 'Leffe blonde'];
+window.FUSE_BEERS = ['Jupiler', 'Jupiler Zero', 'Stella', 'Hoegaarden rosé', 'Duvel', 'Salitos', 'Corona', 'Victoria', 'Leffe blonde'];
 window.FUSE_FRIDGE_SPECIALS = ['Vin blanc', 'Vin rosé', 'Champagne', 'Cava', 'Jägermeister'];
 window.FUSE_SPIRITS = ['Tequila', 'Rhum brun', 'Rhum blanc', 'Vodka', 'Gin', 'Whisky', "Whisky Jack Daniel's", 'Vodka Grey Goose', 'Vodka rouge', 'Gen 27'];
 window.FUSE_SYRUPS = ['Sirop de grenadine', 'Sirop de menthe'];
@@ -21,5 +21,5 @@ window.FUSE_PACK_SIZES = {
   "Jus de pomme":24, "Jus d'orange":24, 'Tonic':24, 'Eau plate':24, 'Eau pétillante':24,
   'Jupiler':24, 'Jupiler Zero':24, 'Duvel':24, 'Stella':24, 'Hoegaarden rosé':24,
   'Victoria':24, 'Leffe blonde':24, 'Redbull':24, 'Redbull rouge':24, 'Redbull Zero':24,
-  'Redbull vert':24, 'Corona':24, 'Sanlitros':24, 'Maté':12, 'Ginger beer':24
+  'Redbull vert':24, 'Corona':24, 'Salitos':24, 'Maté':12, 'Ginger beer':24
 };

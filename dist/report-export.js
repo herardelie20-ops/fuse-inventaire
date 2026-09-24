@@ -286,7 +286,7 @@ fetch('language.js?v=9').then(response => {
   const key = () => `fuse-shelf-${place.value}-${fridge.value}-${shelf.value}`;
   const fridgeKey = () => `fuse-check-${place.value}-${fridge.value}`;
   const shelfNames = () => [...shelf.options].map(option => option.value);
-  const isFridgeShelf = () => place.value.startsWith('Bar ') && !/^Bahut\b/i.test(fridge.value);
+  const isFridgeShelf = () => place.value.startsWith('Bar ') && (!/\bBahut\b/i.test(fridge.value) || (place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 11 (Bahut)'));
   const read = () => { try { return JSON.parse(localStorage.getItem(key())); } catch { return null; } };
   const addLine = item => {
     const row = document.createElement('div'); row.className = 'line';
