@@ -35,7 +35,7 @@
       'Frigo 1': 'IMG-20260924-WA0012.jpg', 'Frigo 2': 'IMG-20260924-WA0011.jpg', 'Frigo 3': 'IMG-20260924-WA0010.jpg',
       'Frigo 4': 'IMG-20260924-WA0009.jpg', 'Frigo 5': 'IMG-20260924-WA0008.jpg', 'Frigo 6': 'IMG-20260924-WA0007.jpg',
       'Frigo 7': 'IMG-20260924-WA0006.jpg', 'Frigo 8': 'IMG-20260924-WA0004.jpg', 'Frigo 9': 'IMG-20260924-WA0005.jpg', 'Frigo 10': 'IMG-20260924-WA0003.jpg',
-      'Frigo Coca 13': 'IMG-20260924-WA0000(1).jpg', 'Frigo Coca 14': 'IMG-20260924-WA0013.jpg', 'Frigo 15 (Bahut)': 'IMG-20260924-WA0017.jpg',
+      'Frigo 15 (Bahut)': 'IMG-20260924-WA0017.jpg',
       'Frigo 16 (Bahut)': 'IMG-20260924-WA0018.jpg', 'Frigo Redbull 17': 'IMG-20260924-WA0019.jpg'
     },
     'Bar 2 - Main room': {'Frigo 1': 'IMG-20260924-WA0021.jpg', 'Frigo 6': 'IMG-20260924-WA0021(1).jpg'},
@@ -47,6 +47,12 @@
     'Bar 4 - Cosmos': {
       'Frigo 1': 'IMG-20260924-WA0047.jpg', 'Frigo 2': 'IMG-20260924-WA0046.jpg', 'Frigo 3': 'IMG-20260924-WA0045.jpg',
       'Frigo 4': 'IMG-20260924-WA0044.jpg', 'Frigo 5 (Red Bull)': 'IMG-20260924-WA0042.jpg', 'Frigo 6 (Coca)': 'IMG-20260924-WA0043.jpg'
+    }
+  };
+  const profileReferencePhotos = {
+    'Bar 1 - Main room': {
+      fuse: {'Frigo Coca 13': 'IMG-20260924-WA0020.jpg', 'Frigo Coca 14': 'IMG-20260924-WA0020.jpg'},
+      'la-demence': {'Frigo Coca 13': 'IMG-20260924-WA0000(1).jpg', 'Frigo Coca 14': 'IMG-20260924-WA0013.jpg'}
     }
   };
 
@@ -108,10 +114,8 @@
   }
   function renderReferencePhoto() {
     const selectedFridge = document.querySelector('#fridge').value;
-    const isDemenceOnly = place.value === 'Bar 1 - Main room' && selectedFridge === 'Frigo Coca 13';
-    const source = isDemenceOnly && window.FUSE_CURRENT_PROFILE !== 'la-demence'
-      ? ''
-      : referencePhotos[place.value]?.[selectedFridge];
+    const source = profileReferencePhotos[place.value]?.[window.FUSE_CURRENT_PROFILE]?.[selectedFridge]
+      || referencePhotos[place.value]?.[selectedFridge];
     reference.classList.toggle('hidden', !source);
     if (!source) return;
     referenceImage.src = `reference-photos/${source}`;
