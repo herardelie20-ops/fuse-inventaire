@@ -6,7 +6,10 @@
   const list = document.querySelector('#fuseProducts');
   const drinkCard = lines.closest('.card');
   window.FUSE_MAX_BOTTLES_PER_LINE = 7;
-  const lineCapacity = () => place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 4' ? 8 : 7;
+  const lineCapacity = () => (
+    (place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 4')
+    || (place.value === 'Bar 1 - Main room' && fridge.value === 'Frigo 2')
+  ) ? 8 : 7;
   const hint = document.createElement('p');
   hint.className = 'small';
   hint.id = 'profileDrinkHint';
@@ -15,7 +18,7 @@
   const fusePlan = {
     'Bar 1 - Main room': {
       'Frigo 1': {'Étage 1 — haut':'Eau plate','Étage 2':'Eau plate','Étage 3 — rez-de-chaussée':'Eau pétillante'},
-      'Frigo 2': {'Étage 1 — haut':'Stella','Étage 2':'Corona · Salitos','Étage 3 — rez-de-chaussée':"Jus d'orange Minute Maid · Jus de pomme Minute Maid"},
+      'Frigo 2': {'Étage 1 — haut':'Stella','Étage 2':'Corona · Salitos','Étage 3 — rez-de-chaussée':"Jus d'orange Minute Maid · Jus de pomme Minute Maid · Tonic"},
       'Frigo 3': {'Étage 1 — haut':'Fanta · Ginger beer · Leffe blonde','Étage 2':'Hoegaarden rosé · Maté · Jupiler Zero','Étage 3 — rez-de-chaussée':'Duvel'},
       'Frigo 4': {'Étage 1 — haut':'Jupiler Zero · Salitos · Corona','Étage 2':'Redbull Zero · Fanta · Coca-Cola Zero','Étage 3 — rez-de-chaussée':'Leffe blonde · Hoegaarden rosé · Fanta'},
       'Frigo 5': {'Étage 1 — haut':'Eau plate','Étage 2':'Eau pétillante','Étage 3 — rez-de-chaussée':'Fuze Tea'},
@@ -79,7 +82,7 @@
       'Frigo 12': {'Étage 1 — haut':'Redbull','Étage 2':'Redbull','Étage 3 — rez-de-chaussée':'Martini Prosecco · Vodka Grey Goose · Vin blanc · Vin rosé'},
       'Frigo 7': {'Étage 1 — haut':'Sprite · Fanta · Maté','Étage 2':'Stella · Hoegaarden rosé · Jupiler Zero','Étage 3 — rez-de-chaussée':'Salitos · Corona · Leffe blonde'},
       'Frigo 6': {'Étage 1 — haut':'Eau Chaudfontaine','Étage 2':'Coca-Cola','Étage 3 — rez-de-chaussée':"Jus d'orange Minute Maid · Jus de pomme Minute Maid"},
-      'Frigo 2': {'Étage 1 — haut':'Stella','Étage 2':'Corona · Salitos','Étage 3 — rez-de-chaussée':"Jus d'orange Minute Maid · Jus de pomme Minute Maid"},
+      'Frigo 2': {'Étage 1 — haut':'Stella','Étage 2':'Corona · Salitos','Étage 3 — rez-de-chaussée':"Jus d'orange Minute Maid · Jus de pomme Minute Maid · Tonic"},
       'Frigo 3': {'Étage 1 — haut':'Fanta · Ginger beer · Leffe blonde','Étage 2':'Hoegaarden rosé · Maté · Jupiler Zero','Étage 3 — rez-de-chaussée':'Duvel'},
       'Frigo 4': {'Étage 1 — haut':'Jupiler Zero · Salitos · Corona','Étage 2':'Redbull · Fanta · Coca-Cola','Étage 3 — rez-de-chaussée':'Leffe blonde · Cava · Hoegaarden rosé · Victoria · Sprite'},
       'Frigo 1': {'Étage 1 — haut':'Eau plate','Étage 2':'Eau plate','Étage 3 — rez-de-chaussée':'Eau pétillante'},
@@ -124,6 +127,11 @@
   // situées derrière ne font pas partie de ce nombre.
   const photoBottleCounts = {
     'Bar 1 - Main room': {
+      'Frigo 2': {
+        'Étage 1 — haut': [8],
+        'Étage 2': [3, 4],
+        'Étage 3 — rez-de-chaussée': [2, 3, 2]
+      },
       'Frigo 3': {
         'Étage 1 — haut': [2, 3, 2],
         'Étage 2': [2, 3, 2],
