@@ -6,6 +6,7 @@
   const list = document.querySelector('#fuseProducts');
   const drinkCard = lines.closest('.card');
   window.FUSE_MAX_BOTTLES_PER_LINE = 7;
+  const lineCapacity = () => place.value === 'Bar 3 - Motion' && fridge.value === 'Frigo 4' ? 8 : 7;
   const hint = document.createElement('p');
   hint.className = 'small';
   hint.id = 'profileDrinkHint';
@@ -128,6 +129,14 @@
         'Étage 2': [2, 3, 2],
         'Étage 3 — rez-de-chaussée': [6]
       }
+    },
+    'Bar 3 - Motion': {
+      // La rangée en avant des Duvel n'est pas prise en compte : la largeur utile est de 6.
+      'Frigo 4': {
+        'Étage 1 — haut': [8],
+        'Étage 2': [8],
+        'Étage 3 — rez-de-chaussée': [6]
+      }
     }
   };
   const bottlesFor = (profile, selectedPlace, selectedFridge, selectedShelf, index) =>
@@ -155,6 +164,7 @@
     });
   }
   function refresh() {
+    window.FUSE_MAX_BOTTLES_PER_LINE = lineCapacity();
     const products = profileProducts(window.FUSE_CURRENT_PROFILE || 'fuse');
     list.innerHTML = products.map(product => `<option value="${product}">`).join('');
     labelShelves();
